@@ -1,0 +1,66 @@
+{
+  "app" : {
+    "db" : {
+      "mysql" : {
+        "host" : "192.168.52.153",
+        "port" : "3306",
+        "dbname" : "apikiller",
+        "username" : "root",
+        "password" : "123456"
+      }
+    },
+    "origin": {
+      "realTime": {
+        "address": "127.0.0.1",
+        "port": "8080"
+      }
+    },
+    "detectors" : {
+      "authorizedDetector": {
+        "option" : "1",
+        "unauthorizedDetector": {
+          "option" : "1",
+          "commonAuthHeaders": "Cookie,Authorization,Authorization-Token",
+          "normalHeaders": "Accept,Accept-Charset,Accept-Encoding,Accept-Language,Accept-Ranges,Cache-Control,Connection,Content-Length,Content-Type,Date,Expect,From,Host,If-Match,If-Modified-Since,If-None-Match,If-Range,If-Unmodified-Since,Max-Forwards,Pragma,Proxy-Authorization,Range,Referer,TE,Upgrade,User-Agent,Via,Warning"
+        },
+        "multiRolesDetector": {
+          "role": "Authorization-Token:Z3Vlc3QxOjEyMzEyMw=="
+        },
+        "singleRoleDetector": {
+
+        },
+        "judgement": {
+          "blackStatusCodes": "403",
+          "blackKeywords": "forbidden,error"
+        }
+      },
+      "csrfDetector": {
+        "option": "1",
+        "csrfTokenPattern": "csrf",
+        "csrfInvalidPattern": "(invalid|csrf)"
+      },
+      "otherDetector": {
+        "option": "0"
+      }
+
+    },
+    "filters": {
+      "httpFilter": {
+        "host": ""
+      },
+      "staticFileFilter": {
+        "ext": "js,gif,jpg,png,css,jpeg,xml,img,svg"
+      }
+    },
+    "notifier": {
+      "Lark": {
+        "webhookUrl": "https://open.feishu.cn/open-apis/bot/v2/hook/88c8b8b4-8d4d-4424-a664-f4c5c6442652",
+        "secret": ""
+      }
+    },
+    "web": {
+      "ipaddr": "127.0.0.1",
+      "port": "80"
+    }
+  }
+}
