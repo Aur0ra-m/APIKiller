@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-# APIKiller
-API Security DAST &amp; Operations
-=======
 # APIKIller
 
 
