@@ -4,7 +4,7 @@
 ## 项目简介
 **一款高度可定制化的DAST&API Security平台**
 
-详细参考：
+详细参考： https://aur0ra.cn/3-apikiller/
 
 ## Feature
 - 支持HTTP/HTTPS流量检测
