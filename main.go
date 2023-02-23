@@ -4,6 +4,7 @@ import (
 	"APIKiller/cmd"
 	"APIKiller/core"
 	"APIKiller/core/aio"
+	"APIKiller/core/data"
 	"APIKiller/core/database"
 	"APIKiller/core/filter"
 	"APIKiller/core/module"
@@ -14,7 +15,6 @@ import (
 	"APIKiller/core/origin/fileInputOrigin"
 	"APIKiller/core/origin/realTimeOrigin"
 	logger "APIKiller/log"
-	"APIKiller/util"
 	"APIKiller/web/backend"
 	"context"
 	"fmt"
@@ -43,14 +43,13 @@ func main() {
 	ctx = loadNotifer(ctx)
 
 	// start web server and so on
-	cmd.Web = false
 	if cmd.Web {
 		logger.Infoln("load web server")
 		go backend.NewAPIServer(ctx)
 	}
 
 	// create a httpItem channel
-	httpItemQueue := make(chan *origin.HttpItem)
+	httpItemQueue := make(chan *origin.TransferItem)
 
 	// load request from different origins
 	go func() {
@@ -76,12 +75,13 @@ func main() {
 
 		// filter requests
 		filters := ctx.Value("filters").([]filter.Filter)
+
 		flag := true // true -pass false -block
 		for _, f := range filters {
 			if f.Filter(ctx, httpItem.Req) == filter.FilterBlocked {
 				flag = false
 
-				logger.Debugln("filter %v, %v", httpItem.Req.Host, httpItem.Req.URL.RawPath)
+				logger.Infoln(fmt.Sprintf("filter %v, %v", httpItem.Req.Host, httpItem.Req.URL.Path))
 				break
 			}
 		}
@@ -116,10 +116,20 @@ Version: %s`+"\n",
 func loadNotifer(ctx context.Context) context.Context {
 	logger.Infoln("loading notifier")
 
-	webhookUrl := util.GetConfig(ctx, "app.notifier.Lark.webhookUrl")
-	secret := util.GetConfig(ctx, "app.notifier.Lark.secret")
+	notifer := notify.NewLarkNotifier(ctx)
+	//notifer := notify.NewDingdingNotifier(ctx)
 
-	notifer := notify.NewLarkNotifier(webhookUrl, secret)
+	// init queue
+	notifer.NotifyQueue = make(chan *data.DataItem, 30)
+
+	// message queue
+	go func() {
+		var item *data.DataItem
+		for {
+			item = <-notifer.NotifyQueue
+			notifer.Notify(item)
+		}
+	}()
 
 	return context.WithValue(ctx, "notifier", notifer)
 }
@@ -128,6 +138,18 @@ func loadDatabase(ctx context.Context) context.Context {
 	logger.Infoln("loading database")
 
 	client := database.NewMysqlClient(ctx)
+
+	// init queue
+	client.ItemAddQueue = make(chan *data.DataItem, 100)
+
+	// message queue
+	go func() {
+		var item *data.DataItem
+		for {
+			item = <-client.ItemAddQueue
+			client.AddInfo(item)
+		}
+	}()
 
 	return context.WithValue(ctx, "db", client)
 }

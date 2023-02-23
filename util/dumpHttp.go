@@ -2,7 +2,6 @@ package util
 
 import (
 	logger "APIKiller/log"
-	"fmt"
 	"net/http"
 	"net/http/httputil"
 )
@@ -36,25 +35,22 @@ func DumpResponse(response *http.Response) string {
 	return string(dumpRequest)
 }
 
-func DumpRequests(requests []*http.Request) string {
-	result := ""
+func DumpRequests(requests []*http.Request) []string {
+	var result []string
 	for _, request := range requests {
 		dumpRequest := DumpRequest(request)
-
-		result += fmt.Sprintf("\n**********************************************\n%s", dumpRequest)
+		result = append(result, dumpRequest)
 	}
 
 	return result
 }
 
-func DumpResponses(responses []*http.Response) string {
-	result := ""
-
+func DumpResponses(responses []*http.Response) []string {
+	var result []string
 	for _, response := range responses {
 
 		dumpResponse := DumpResponse(response)
-
-		result += fmt.Sprintf("\n*****************************************\n%s", dumpResponse)
+		result = append(result, dumpResponse)
 	}
 
 	return result

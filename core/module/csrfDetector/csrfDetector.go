@@ -4,8 +4,10 @@ import (
 	http2 "APIKiller/core/ahttp"
 	"APIKiller/core/data"
 	"APIKiller/core/module"
+	logger "APIKiller/log"
 	"APIKiller/util"
 	"context"
+	"fmt"
 	"github.com/antlabs/strsim"
 	"io/ioutil"
 	"net/http"
@@ -16,12 +18,25 @@ import (
 type CsrfDetector struct {
 	csrfTokenPattern   string
 	csrfInvalidPattern string
+	samesitePolicy     map[string]string
 }
 
 func (d *CsrfDetector) Detect(ctx context.Context, item *data.DataItem) {
 	resp := item.SourceResponse
+	req := item.SourceRequest
 
-	// same-site
+	// same-site check
+	if d.samesitePolicy[req.Host] == "" {
+		d.getSameSitePolicy(ctx, item)
+	}
+	policy := d.samesitePolicy[req.Host]
+	if policy == "Strict" {
+		return
+	} else if policy == "Lax" && item.Method != "GET" {
+		return
+	} else {
+		// no same-site policy or the policy is fail
+	}
 
 	// cors--Access-Control-Allow-Origin
 	value := resp.Header.Get("Access-Control-Allow-Origin")
@@ -30,7 +45,7 @@ func (d *CsrfDetector) Detect(ctx context.Context, item *data.DataItem) {
 	}
 
 	// copy request
-	request := http2.RequestClone(item.SourceRequest)
+	request := http2.RequestClone(req)
 
 	// delete referer and origin
 	if request.Header.Get("Referer") != "" {
@@ -72,7 +87,7 @@ func (d *CsrfDetector) Detect(ctx context.Context, item *data.DataItem) {
 	}
 
 	// make request
-	response := http2.DoRequest(request)
+	response := http2.DoRequest(request, item.Https)
 	if response == nil {
 		return
 	}
@@ -84,6 +99,38 @@ func (d *CsrfDetector) Detect(ctx context.Context, item *data.DataItem) {
 		item.VulnRequest = append(item.VulnRequest, request)
 		item.VulnResponse = append(item.VulnResponse, response)
 	}
+}
+
+//
+// getSameSitePolicy
+//  @Description: get same-site policy from response received from the request deleted cookie
+//  @receiver d
+//  @param ctx
+//  @param item
+//
+func (d *CsrfDetector) getSameSitePolicy(ctx context.Context, item *data.DataItem) {
+	// copy request
+	request := http2.RequestClone(item.SourceRequest)
+	// delete cookie and get set-cookie header from response
+	request.Header.Del("Cookie")
+	response := http2.DoRequest(request, item.Https)
+	setCookie := response.Header.Get("Set-Cookie")
+
+	var policy string
+	// parse policy from Set-Cookie header
+	if strings.Contains(setCookie, "SameSite=Lax") {
+		policy = "Lax"
+	} else if strings.Contains(setCookie, "SameSite=Strict") {
+		policy = "Strict"
+	} else { // if there is not same-site policy or the policy is None
+		policy = "None"
+	}
+
+	// save policy to samesitePolicy
+	key := request.Host
+	d.samesitePolicy[key] = policy
+
+	logger.Infoln(fmt.Sprintf("Host: %s, Same-Site policy: %s", key, policy))
 }
 
 //
@@ -105,18 +152,21 @@ func (d *CsrfDetector) judge(srcResponse, response *http.Response) bool {
 }
 
 func NewCsrfDetector(ctx context.Context) module.Detecter {
-	if util.GetConfig(ctx, "app.detectors.csrfDetector.option") != "1" {
+	if util.GetConfig(ctx, "app.modules.csrfDetector.option") == "0" {
 		return nil
 	}
 
+	logger.Infoln("[Load Module] csrf detector module")
+
 	// get config
-	csrfTokenPattern := util.GetConfig(ctx, "app.detectors.csrfDetector.csrfTokenPattern")
-	csrfInvalidPattern := util.GetConfig(ctx, "app.detectors.csrfDetector.csrfInvalidPattern")
+	csrfTokenPattern := util.GetConfig(ctx, "app.modules.csrfDetector.csrfTokenPattern")
+	csrfInvalidPattern := util.GetConfig(ctx, "app.modules.csrfDetector.csrfInvalidPattern")
 
 	// instantiate csrfDetector
 	detector := &CsrfDetector{
 		csrfTokenPattern:   csrfTokenPattern,
 		csrfInvalidPattern: csrfInvalidPattern,
+		samesitePolicy:     make(map[string]string, 100),
 	}
 
 	return detector

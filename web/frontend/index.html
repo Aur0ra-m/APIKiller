@@ -189,7 +189,7 @@
           updateCheckState() {
             function updateCheckState(Id, state) {
               //默认只能将未打标更新为打标
-              let url = host + '/checked'
+              let url = host + '/check'
               fetch(url, {
                 method: 'post',
                 headers: {

@@ -35,7 +35,7 @@ func (d *singleRoleDetector) Detect(ctx context.Context, item *data.DataItem) {
 
 func newSingleRoleDetector(ctx context.Context) *singleRoleDetector {
 	//whether to use the current module
-	if util.GetConfig(ctx, "app.detectors.authorizedDetector.singleRoleDetector.option") != "1" {
+	if util.GetConfig(ctx, "app.modules.authorizedDetector.singleRoleDetector.option") == "0" {
 		return nil
 	}
 

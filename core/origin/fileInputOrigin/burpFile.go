@@ -12,7 +12,7 @@ import (
 //  @Description: parse data from burpsuite file
 //  @receiver o
 //
-func (o *FileInputOrigin) parseDataFromBurpFile(httpItemQueue chan *origin.HttpItem) {
+func (o *FileInputOrigin) parseDataFromBurpFile(httpItemQueue chan *origin.TransferItem) {
 
 	doc := etree.NewDocument()
 
@@ -46,7 +46,7 @@ func (o *FileInputOrigin) parseDataFromBurpFile(httpItemQueue chan *origin.HttpI
 		https := !(protocol.Text() == "http")
 
 		//transport via channel
-		httpItemQueue <- &origin.HttpItem{
+		httpItemQueue <- &origin.TransferItem{
 			Req:   req,
 			Resp:  resp,
 			Https: https,

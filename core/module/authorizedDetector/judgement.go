@@ -23,7 +23,7 @@ var (
 //
 func Judge(ctx context.Context, srcResp, newResp *http.Response) bool {
 	// status code
-	blackStatusCodes := util.GetConfig(ctx, "app.detectors.authorizedDetector.judgement.blackStatusCodes")
+	blackStatusCodes := util.GetConfig(ctx, "app.modules.authorizedDetector.judgement.blackStatusCodes")
 	codes := util.SplitConfigString(blackStatusCodes)
 	for _, code := range codes {
 		if strings.Index(newResp.Status, code) != -1 {
@@ -35,7 +35,7 @@ func Judge(ctx context.Context, srcResp, newResp *http.Response) bool {
 	newBody, _ := ioutil.ReadAll(newResp.Body)
 
 	// keywords matching on the response body
-	blackKeywords := util.GetConfig(ctx, "app.detectors.authorizedDetector.judgement.blackKeywords")
+	blackKeywords := util.GetConfig(ctx, "app.modules.authorizedDetector.judgement.blackKeywords")
 	splits := util.SplitConfigString(blackKeywords)
 	for _, split := range splits {
 		if strings.Index(string(newBody), split) != -1 {

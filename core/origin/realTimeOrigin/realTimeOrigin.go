@@ -20,7 +20,7 @@ import (
 type RealTimeOrigin struct {
 }
 
-func (r *RealTimeOrigin) LoadOriginRequest(ctx context.Context, httpItemQueue chan *origin.HttpItem) {
+func (r *RealTimeOrigin) LoadOriginRequest(ctx context.Context, httpItemQueue chan *origin.TransferItem) {
 	// get config
 	address := util.GetConfig(ctx, "app.origin.realTime.address")
 	port := util.GetConfig(ctx, "app.origin.realTime.port")
@@ -54,7 +54,7 @@ func NewRealTimeOrigin() *RealTimeOrigin {
 //  @param httpItemQueue
 //  @return *goproxy.ProxyHttpServer
 //
-func proxyN(httpItemQueue chan *origin.HttpItem) *goproxy.ProxyHttpServer {
+func proxyN(httpItemQueue chan *origin.TransferItem) *goproxy.ProxyHttpServer {
 	proxy := goproxy.NewProxyHttpServer()
 
 	setCA(caCert, caKey) //defined in this file
@@ -89,7 +89,7 @@ func proxyN(httpItemQueue chan *origin.HttpItem) *goproxy.ProxyHttpServer {
 		response := ahttp.ResponseClone(ctx.Resp, request)
 
 		// transport ctx.Req via channel
-		httpItemQueue <- &origin.HttpItem{
+		httpItemQueue <- &origin.TransferItem{
 			Req:   request,
 			Resp:  response,
 			Https: resp.TLS != nil,

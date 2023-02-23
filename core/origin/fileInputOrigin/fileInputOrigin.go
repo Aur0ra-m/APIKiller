@@ -16,7 +16,7 @@ type FileInputOrigin struct {
 	path string
 }
 
-func (o *FileInputOrigin) LoadOriginRequest(ctx context.Context, httpItemQueue chan *origin.HttpItem) {
+func (o *FileInputOrigin) LoadOriginRequest(ctx context.Context, httpItemQueue chan *origin.TransferItem) {
 	logger.Infoln("[Load Request] load request from file input origin")
 
 	if stat, _ := os.Stat(o.path); stat.IsDir() {

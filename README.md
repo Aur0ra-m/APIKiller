@@ -4,7 +4,15 @@
 ## 项目简介
 **一款高度可定制化的DAST&API Security平台**
 
+<<<<<<< HEAD
+<<<<<<< HEAD
 详细参考： https://aur0ra.cn/3-apikiller/
+=======
+详细参考： https://github.com/Aur0ra-m/APIKiller
+>>>>>>> 9b79868 (v0.0.2)
+=======
+详细参考： https://github.com/Aur0ra-m/APIKiller
+>>>>>>> main
 
 ## Feature
 - 支持HTTP/HTTPS流量检测
@@ -67,8 +75,10 @@
 5. ding~，发现新漏洞，快去看鸭
 
 ## 检测效果展示
-这里基于[VAPI越权靶场](https://www.freebuf.com/vuls/332312.html) 进行实战模拟
+### API越权检测
+>这里基于[VAPI越权靶场](https://www.freebuf.com/vuls/332312.html) 进行实战模拟
 配好环境后，先根据项目鉴权机制，拿两个账号，配置好config.json
+> 
 ![img.png](static/img/img_20.png)
 然后启动项目，访问接口
 ![img_1.png](static/img/img_21.png)
@@ -76,27 +86,46 @@
 **成功检测出越权和csrf**
 ![img_3.png](static/img/img_23.png)
 
-## 项目架构
-![architecture](static/img/architecture.jpg)
+### CSRF检测
+> 基于pikachu靶场，进行漏洞检测
+> 
+![img_1.png](static/img/img_25.png)
 
+![img.png](static/img/img_24.png)
+
+
+## 项目架构
+![img.png](static/img/architecture.jpg)
 
 ## API运营平台
 ![](static/img/2.jpg)
 
+
 ## 二次开发文档
 【暂无】
 
-## 优化记录
-
+## 更新记录
+### 0.0.2
+1. 对整体架构进行优化，提高效率（通知模块优化、数据库存储模块优化）
+2. 修正对https请求的处理
+3. 优化csrf检测模块
+4. 添加对钉钉通知的支持
+5. 重改数据库设计，同时数据库存储时进行base64转码操作
 
 ## 后期计划
-- [ ] 其他数据库支持
 - [ ] 添加基于poc的扫描模块
 - [ ] 403bypass module
-- [ ] 完善其他通知方式的支持
+- [x] 完善其他通知方式的支持
 - [ ] 支持扫描代理功能
 - [ ] 提供docker版快速搭建能力
 - [ ] 其他
 
 ## 感谢
 【**最后感谢项目中所使用到的各种开源组件的作者**】
+<<<<<<< HEAD
+=======
+
+<<<<<<< HEAD
+>>>>>>> 9b79868 (v0.0.2)
+=======
+>>>>>>> main

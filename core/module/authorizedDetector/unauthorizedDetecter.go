@@ -101,7 +101,7 @@ func (d *unauthorizedDetector) detect(ctx context.Context, item *data.DataItem, 
 	req.Header.Del(targetHeader)
 
 	// do request
-	response := http2.DoRequest(req)
+	response := http2.DoRequest(req, item.Https)
 
 	// judge
 	if Judge(ctx, item.SourceResponse, response) == Bypass {
@@ -111,15 +111,15 @@ func (d *unauthorizedDetector) detect(ctx context.Context, item *data.DataItem, 
 }
 
 func newUnauthorizedDetector(ctx context.Context) *unauthorizedDetector {
-	if util.GetConfig(ctx, "app.detectors.authorizedDetector.unauthorizedDetector.commonAuthHeaders") == "0" {
+	if util.GetConfig(ctx, "app.modules.authorizedDetector.unauthorizedDetector.commonAuthHeaders") == "0" {
 		return nil
 	}
 	logger.Infoln("[Load Module] unauthorized module")
 
 	detector := &unauthorizedDetector{}
 
-	commonAuthHeaders := util.GetConfig(ctx, "app.detectors.authorizedDetector.unauthorizedDetector.commonAuthHeaders")
-	normalHeaders := util.GetConfig(ctx, "app.detectors.authorizedDetector.unauthorizedDetector.normalHeaders")
+	commonAuthHeaders := util.GetConfig(ctx, "app.modules.authorizedDetector.unauthorizedDetector.commonAuthHeaders")
+	normalHeaders := util.GetConfig(ctx, "app.modules.authorizedDetector.unauthorizedDetector.normalHeaders")
 
 	detector.commonAuthHeaders = util.SplitConfigString(commonAuthHeaders)
 	detector.normalHeaders = util.SplitConfigString(normalHeaders)

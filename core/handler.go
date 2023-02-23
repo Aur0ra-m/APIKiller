@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-func NewHandler(ctx context.Context, httpItem *origin.HttpItem) {
+func NewHandler(ctx context.Context, httpItem *origin.TransferItem) {
 	r := httpItem.Req
 
 	// assembly DataItem
@@ -33,8 +33,8 @@ func NewHandler(ctx context.Context, httpItem *origin.HttpItem) {
 	}
 
 	// enum all modules and detect
-	detectors := ctx.Value("modules").([]module.Detecter)
-	for _, detector := range detectors {
+	modules := ctx.Value("modules").([]module.Detecter)
+	for _, detector := range modules {
 		if detector == nil {
 			continue
 		}
@@ -43,12 +43,16 @@ func NewHandler(ctx context.Context, httpItem *origin.HttpItem) {
 	}
 
 	// notify
+	//if len(item.VulnType) != 0 {
+	//	notifier := ctx.Value("notifier").(notify.Notify)
+	//	notifier.GetQueue() <- item
+	//}
 	notifier := ctx.Value("notifier").(notify.Notify)
-	notifier.Notify(ctx, item)
+	notifier.GetQueue() <- item
 
 	// print result and save result
 	logger.Infoln(fmt.Sprintf("%v %v checkout: %v", item.Domain, item.Url, item.VulnType))
 	db := ctx.Value("db").(database.Database)
-	db.AddInfo(item)
+	db.GetItemAddQueue() <- item
 
 }

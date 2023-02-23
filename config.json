@@ -15,9 +15,9 @@
         "port": "8080"
       }
     },
-    "detectors" : {
+    "modules" : {
       "authorizedDetector": {
-        "option" : "1",
+        "option" : "0",
         "unauthorizedDetector": {
           "option" : "1",
           "commonAuthHeaders": "Cookie,Authorization,Authorization-Token",
@@ -49,13 +49,16 @@
         "host": ""
       },
       "staticFileFilter": {
-        "ext": "js,gif,jpg,png,css,jpeg,xml,img,svg"
+        "ext": "js,gif,jpg,png,css,jpeg,xml,img,svg,ico"
       }
     },
     "notifier": {
       "Lark": {
-        "webhookUrl": "https://open.feishu.cn/open-apis/bot/v2/hook/88c8b8b4-8d4d-4424-a664-f4c5c6442652",
+        "webhookUrl": "https://open.feishu.cn/open-apis/bot/v2/hook/a814553d-3fc0-4c5b-8e98-694830cc3121",
         "secret": ""
+      },
+      "Dingding": {
+        "webhookUrl": ""
       }
     },
     "web": {

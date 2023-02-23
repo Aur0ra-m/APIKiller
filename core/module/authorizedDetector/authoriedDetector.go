@@ -35,7 +35,7 @@ func (d *AuthorizedDetector) Detect(ctx context.Context, item *data.DataItem) {
 }
 
 func NewAuthorizedDetector(ctx context.Context) module.Detecter {
-	if util.GetConfig(ctx, "app.detectors.authorizedDetector.option") != "1" {
+	if util.GetConfig(ctx, "app.modules.authorizedDetector.option") == "0" {
 		return nil
 	}
 
@@ -43,7 +43,7 @@ func NewAuthorizedDetector(ctx context.Context) module.Detecter {
 
 	var detector *AuthorizedDetector
 
-	if util.GetConfig(ctx, "app.detectors.authorizedDetector.multiRolesDetector.role") != "" {
+	if util.GetConfig(ctx, "app.modules.authorizedDetector.multiRolesDetector.role") != "" {
 		detector = &AuthorizedDetector{
 			multiRolesDetector:   newMultiRolesDetector(ctx),
 			singleRoleDetector:   nil,

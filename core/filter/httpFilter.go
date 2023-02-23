@@ -13,6 +13,7 @@ type HttpFilter struct {
 
 func (f HttpFilter) Filter(ctx context.Context, req *http.Request) bool {
 	logger.Debugln("[Filter] ahttp filter")
+
 	// get config and match through RegExp
 	hostExp := util.GetConfig(ctx, "app.filters.httpFilter.host")
 	hostsExp := util.SplitConfigString(hostExp)

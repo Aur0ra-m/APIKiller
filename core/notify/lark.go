@@ -4,6 +4,7 @@ import (
 	http2 "APIKiller/core/ahttp"
 	"APIKiller/core/data"
 	logger "APIKiller/log"
+	"APIKiller/util"
 	"bytes"
 	"context"
 	"crypto/hmac"
@@ -15,10 +16,11 @@ import (
 )
 
 type Lark struct {
-	webhookUrl string
-	secret     string
-	signature  string
-	timestamp  int64
+	webhookUrl  string
+	secret      string
+	signature   string
+	timestamp   int64
+	NotifyQueue chan *data.DataItem
 }
 
 func (l *Lark) genSign() {
@@ -44,6 +46,15 @@ func (l *Lark) init() {
 	if l.secret != "" {
 		l.genSign()
 	}
+
+	//// message queue
+	//go func() {
+	//	var item *data.DataItem
+	//	for {
+	//		item = <-l.NotifyQueue
+	//		l.notify(item)
+	//	}
+	//}()
 }
 
 //
@@ -53,7 +64,12 @@ func (l *Lark) init() {
 //  @param signature lark webhook authorize parameter(optional)
 //  @return *Lark
 //
-func NewLarkNotifier(webhookUrl, secret string) *Lark {
+func NewLarkNotifier(ctx context.Context) *Lark {
+	// get config
+	webhookUrl := util.GetConfig(ctx, "app.notifier.Lark.webhookUrl")
+	secret := util.GetConfig(ctx, "app.notifier.Lark.secret")
+
+	// create
 	lark := &Lark{
 		webhookUrl: webhookUrl,
 		signature:  secret,
@@ -65,7 +81,11 @@ func NewLarkNotifier(webhookUrl, secret string) *Lark {
 	return lark
 }
 
-func (l *Lark) Notify(ctx context.Context, item *data.DataItem) {
+func (l *Lark) GetQueue() chan *data.DataItem {
+	return l.NotifyQueue
+}
+
+func (l *Lark) Notify(item *data.DataItem) {
 	logger.Infoln("notify lark robot")
 
 	var jsonData []byte
@@ -90,7 +110,7 @@ func (l *Lark) Notify(ctx context.Context, item *data.DataItem) {
 	request, _ := http.NewRequest("POST", l.webhookUrl, bytes.NewBuffer(jsonData))
 	request.Header.Set("Content-Type", "application/json; charset=UTF-8")
 
-	response := http2.DoRequest(request)
+	response := http2.DoRequest(request, false)
 
 	defer response.Body.Close()
 }

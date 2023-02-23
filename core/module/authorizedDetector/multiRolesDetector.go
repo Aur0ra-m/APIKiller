@@ -23,7 +23,7 @@ func (d *multiRolesDetector) Detect(ctx context.Context, item *data.DataItem) {
 	req.Header.Set(d.authHeader["httpHeader"], d.authHeader["value"])
 
 	// do request
-	response := http2.DoRequest(req)
+	response := http2.DoRequest(req, item.Https)
 
 	// judge
 	if Judge(ctx, item.SourceResponse, response) == Bypass {
@@ -43,7 +43,7 @@ func newMultiRolesDetector(ctx context.Context) *multiRolesDetector {
 	logger.Infoln("[Load Module] multiple roles module")
 
 	// get config: app.modules.authorizedDetector.multiRolesDetector.role
-	role := util.GetConfig(ctx, "app.detectors.authorizedDetector.multiRolesDetector.role")
+	role := util.GetConfig(ctx, "app.modules.authorizedDetector.multiRolesDetector.role")
 	// split role into header and value
 	splits := strings.Split(role, ":")
 	header := splits[0]

@@ -5,6 +5,7 @@ import (
 	logger "APIKiller/log"
 	"APIKiller/util"
 	"bufio"
+	"crypto/tls"
 	"net/http"
 	"net/url"
 	"strings"
@@ -16,8 +17,24 @@ import (
 //  @param r
 //  @return *http.Response
 //
-func DoRequest(r *http.Request) *http.Response {
-	Client := &http.Client{}
+func DoRequest(r *http.Request, https bool) *http.Response {
+	var Client http.Client
+
+	// https request
+	if https {
+		// ignore certificate verification
+		tr := &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		}
+		// https client
+		Client = http.Client{
+			Transport: tr,
+		}
+	} else {
+		// http client
+		Client = http.Client{}
+	}
+
 	response, err := Client.Do(r)
 	if err != nil {
 		logger.Errorln(err)
@@ -50,7 +67,9 @@ func RequestClone(src *http.Request) *http.Request {
 	}
 	request.URL = u
 	// transform body
-	request.Body = aio.TransformReadCloser(request.Body)
+	if request.Body != nil {
+		request.Body = aio.TransformReadCloser(request.Body)
+	}
 
 	return request
 }
