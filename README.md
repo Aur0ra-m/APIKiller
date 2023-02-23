@@ -4,7 +4,8 @@
 ## 项目简介
 **一款高度可定制化的DAST&API Security平台**
 
-详细参考： https://github.com/Aur0ra-m/APIKiller
+详细参考： https://aur0ra.cn/3-apikiller/
+
 > 后续版本只在项目中更新，博客不进行同步更新
 
 ## Feature
