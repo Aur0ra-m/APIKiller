@@ -4,15 +4,8 @@
 ## 项目简介
 **一款高度可定制化的DAST&API Security平台**
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-详细参考： https://aur0ra.cn/3-apikiller/
-=======
 详细参考： https://github.com/Aur0ra-m/APIKiller
->>>>>>> 9b79868 (v0.0.2)
-=======
-详细参考： https://github.com/Aur0ra-m/APIKiller
->>>>>>> main
+> 后续版本只在项目中更新，博客不进行同步更新
 
 ## Feature
 - 支持HTTP/HTTPS流量检测
@@ -122,10 +115,6 @@
 
 ## 感谢
 【**最后感谢项目中所使用到的各种开源组件的作者**】
-<<<<<<< HEAD
 =======
 
-<<<<<<< HEAD
->>>>>>> 9b79868 (v0.0.2)
-=======
->>>>>>> main
+>>>>>>> APIKiller v0.0.2

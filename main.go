@@ -15,6 +15,7 @@ import (
 	"APIKiller/core/origin/fileInputOrigin"
 	"APIKiller/core/origin/realTimeOrigin"
 	logger "APIKiller/log"
+	"APIKiller/util"
 	"APIKiller/web/backend"
 	"context"
 	"fmt"
@@ -22,7 +23,7 @@ import (
 )
 
 const (
-	VERSION = "0.0.1"
+	VERSION = "0.0.2"
 )
 
 func main() {
@@ -116,17 +117,24 @@ Version: %s`+"\n",
 func loadNotifer(ctx context.Context) context.Context {
 	logger.Infoln("loading notifier")
 
-	notifer := notify.NewLarkNotifier(ctx)
-	//notifer := notify.NewDingdingNotifier(ctx)
+	var notifer notify.Notify
 
-	// init queue
-	notifer.NotifyQueue = make(chan *data.DataItem, 30)
+	if util.GetConfig(ctx, "app.notifier.Lark.webhookUrl") != "" {
+		notifer = notify.NewLarkNotifier(ctx)
+	} else if util.GetConfig(ctx, "app.notifier.Dingding.webhookUrl") != "" {
+		notifer = notify.NewDingdingNotifer(ctx)
+	} else {
+		return ctx
+	}
+
+	// init notify queue
+	notifer.SetNotifyQueue(make(chan *data.DataItem, 30))
 
 	// message queue
 	go func() {
 		var item *data.DataItem
 		for {
-			item = <-notifer.NotifyQueue
+			item = <-notifer.NotifyQueue()
 			notifer.Notify(item)
 		}
 	}()
@@ -137,21 +145,21 @@ func loadNotifer(ctx context.Context) context.Context {
 func loadDatabase(ctx context.Context) context.Context {
 	logger.Infoln("loading database")
 
-	client := database.NewMysqlClient(ctx)
+	db := database.NewMysqlClient(ctx)
 
 	// init queue
-	client.ItemAddQueue = make(chan *data.DataItem, 100)
+	db.SetItemAddQueue(make(chan *data.DataItem, 100))
 
 	// message queue
 	go func() {
 		var item *data.DataItem
 		for {
-			item = <-client.ItemAddQueue
-			client.AddInfo(item)
+			item = <-db.ItemAddQueue()
+			db.AddInfo(item)
 		}
 	}()
 
-	return context.WithValue(ctx, "db", client)
+	return context.WithValue(ctx, "db", db)
 }
 
 func loadModules(ctx context.Context) context.Context {

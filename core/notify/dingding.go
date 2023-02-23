@@ -13,7 +13,15 @@ import (
 
 type Dingding struct {
 	webhookUrl  string
-	NotifyQueue chan *data.DataItem
+	notifyQueue chan *data.DataItem
+}
+
+func (d *Dingding) NotifyQueue() chan *data.DataItem {
+	return d.notifyQueue
+}
+
+func (d *Dingding) SetNotifyQueue(NotifyQueue chan *data.DataItem) {
+	d.notifyQueue = NotifyQueue
 }
 
 func (d *Dingding) Notify(item *data.DataItem) {
@@ -42,13 +50,11 @@ func (d *Dingding) Notify(item *data.DataItem) {
 	defer response.Body.Close()
 }
 
-func (d *Dingding) GetQueue() chan *data.DataItem {
-	return d.NotifyQueue
-}
-
-func NewDingdingNotifier(ctx context.Context) *Dingding {
+func NewDingdingNotifer(ctx context.Context) *Dingding {
 	// get config
 	webhookUrl := util.GetConfig(ctx, "app.notifier.Dingding.webhookUrl")
 	// create
-	return &Dingding{webhookUrl: webhookUrl}
+	notifer := &Dingding{webhookUrl: webhookUrl}
+
+	return notifer
 }

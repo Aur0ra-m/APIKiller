@@ -45,14 +45,14 @@ func NewHandler(ctx context.Context, httpItem *origin.TransferItem) {
 	// notify
 	//if len(item.VulnType) != 0 {
 	//	notifier := ctx.Value("notifier").(notify.Notify)
-	//	notifier.GetQueue() <- item
+	//	notifier.notifyQueue() <- item
 	//}
 	notifier := ctx.Value("notifier").(notify.Notify)
-	notifier.GetQueue() <- item
+	notifier.NotifyQueue() <- item
 
 	// print result and save result
 	logger.Infoln(fmt.Sprintf("%v %v checkout: %v", item.Domain, item.Url, item.VulnType))
 	db := ctx.Value("db").(database.Database)
-	db.GetItemAddQueue() <- item
+	db.ItemAddQueue() <- item
 
 }

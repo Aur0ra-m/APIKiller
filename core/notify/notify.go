@@ -6,5 +6,6 @@ import (
 
 type Notify interface {
 	Notify(item *data.DataItem)
-	GetQueue() chan *data.DataItem
+	NotifyQueue() chan *data.DataItem
+	SetNotifyQueue(chan *data.DataItem)
 }

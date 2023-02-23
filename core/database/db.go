@@ -8,5 +8,6 @@ type Database interface {
 	ListAllInfo() []data.DataItemStr
 	AddInfo(item *data.DataItem)
 	Exist(domain, url, method string) bool
-	GetItemAddQueue() chan *data.DataItem
+	ItemAddQueue() chan *data.DataItem
+	SetItemAddQueue(chan *data.DataItem)
 }

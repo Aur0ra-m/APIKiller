@@ -16,7 +16,15 @@ import (
 type Mysql struct {
 	db           *gorm.DB
 	MaxCount     int //the max num of per-query
-	ItemAddQueue chan *data.DataItem
+	itemAddQueue chan *data.DataItem
+}
+
+func (m *Mysql) ItemAddQueue() chan *data.DataItem {
+	return m.itemAddQueue
+}
+
+func (m *Mysql) SetItemAddQueue(itemAddQueue chan *data.DataItem) {
+	m.itemAddQueue = itemAddQueue
 }
 
 // ListAllInfo fetch all results and return
@@ -57,10 +65,6 @@ func (m *Mysql) ListAllInfo() []data.DataItemStr {
 	}
 
 	return items
-}
-
-func (m *Mysql) GetItemAddQueue() chan *data.DataItem {
-	return m.ItemAddQueue
 }
 
 func (m *Mysql) Exist(domain, url, method string) bool {

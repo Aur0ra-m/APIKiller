@@ -20,7 +20,15 @@ type Lark struct {
 	secret      string
 	signature   string
 	timestamp   int64
-	NotifyQueue chan *data.DataItem
+	notifyQueue chan *data.DataItem
+}
+
+func (l *Lark) NotifyQueue() chan *data.DataItem {
+	return l.notifyQueue
+}
+
+func (l *Lark) SetNotifyQueue(NotifyQueue chan *data.DataItem) {
+	l.notifyQueue = NotifyQueue
 }
 
 func (l *Lark) genSign() {
@@ -47,14 +55,6 @@ func (l *Lark) init() {
 		l.genSign()
 	}
 
-	//// message queue
-	//go func() {
-	//	var item *data.DataItem
-	//	for {
-	//		item = <-l.NotifyQueue
-	//		l.notify(item)
-	//	}
-	//}()
 }
 
 //
@@ -82,7 +82,7 @@ func NewLarkNotifier(ctx context.Context) *Lark {
 }
 
 func (l *Lark) GetQueue() chan *data.DataItem {
-	return l.NotifyQueue
+	return l.notifyQueue
 }
 
 func (l *Lark) Notify(item *data.DataItem) {
