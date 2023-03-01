@@ -6,6 +6,9 @@
 
 详细参考： [快看~项目精髓](https://aur0ra.cn/3-apikiller/)
 
+## 项目架构
+![img.png](static/img/architecture.jpg)
+
 
 ## Feature
 - 支持HTTP/HTTPS流量检测
@@ -105,9 +108,6 @@
 
 ![img.png](static/img/img_24.png)
 
-
-## 项目架构
-![img.png](static/img/architecture.jpg)
 
 
 ## API运营平台
