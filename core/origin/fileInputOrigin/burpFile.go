@@ -7,11 +7,10 @@ import (
 	"github.com/beevik/etree"
 )
 
-//
 // parseData
-//  @Description: parse data from burpsuite file
-//  @receiver o
 //
+//	@Description: parse data from burpsuite file
+//	@receiver o
 func (o *FileInputOrigin) parseDataFromBurpFile(httpItemQueue chan *origin.TransferItem) {
 
 	doc := etree.NewDocument()
@@ -40,16 +39,12 @@ func (o *FileInputOrigin) parseDataFromBurpFile(httpItemQueue chan *origin.Trans
 			panic(err3)
 		}
 
-		req, resp := CreateNewHttp(string(rawRequestBytes), rawUrl, string(rawResponseBytes))
-
-		protocol := item.SelectElement("protocol")
-		https := !(protocol.Text() == "http")
+		req, resp := RecoverHttpRequest(string(rawRequestBytes), rawUrl, string(rawResponseBytes))
 
 		//transport via channel
 		httpItemQueue <- &origin.TransferItem{
-			Req:   req,
-			Resp:  resp,
-			Https: https,
+			Req:  req,
+			Resp: resp,
 		}
 	}
 

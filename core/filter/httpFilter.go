@@ -2,25 +2,24 @@ package filter
 
 import (
 	logger "APIKiller/log"
-	"APIKiller/util"
 	"context"
+	"github.com/spf13/viper"
 	"net/http"
 	"regexp"
 )
 
 type HttpFilter struct {
+	hostsExp []string
 }
 
-func (f HttpFilter) Filter(ctx context.Context, req *http.Request) bool {
+func (f *HttpFilter) Filter(ctx context.Context, req *http.Request) bool {
 	logger.Debugln("[Filter] ahttp filter")
 
-	// get config and match through RegExp
-	hostExp := util.GetConfig(ctx, "app.filters.httpFilter.host")
-	hostsExp := util.SplitConfigString(hostExp)
-	if len(hostsExp) != 0 {
+	// match through RegExp
+	if len(f.hostsExp) != 0 {
 		reqHost := req.Host
 		flag := FilterBlocked
-		for _, hostExp := range hostsExp {
+		for _, hostExp := range f.hostsExp {
 			if matched, _ := regexp.Match(hostExp, []byte(reqHost)); matched {
 				flag = FilterPass
 				break
@@ -35,5 +34,7 @@ func (f HttpFilter) Filter(ctx context.Context, req *http.Request) bool {
 func NewHttpFilter() Filter {
 	logger.Infoln("[Load Filter] http filter")
 
-	return &HttpFilter{}
+	return &HttpFilter{
+		hostsExp: viper.GetStringSlice("app.filter.httpFilter.host"),
+	}
 }

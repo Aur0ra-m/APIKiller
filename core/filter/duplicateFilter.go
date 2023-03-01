@@ -1,29 +1,32 @@
 package filter
 
 import (
-	"APIKiller/core/database"
 	logger "APIKiller/log"
 	"context"
+	"fmt"
+	"golang.org/x/exp/slices"
 	"net/http"
 )
 
 type DuplicateFilter struct {
+	history []string // []string{"GET domain /admin/index",}
 }
 
 func (f *DuplicateFilter) Filter(ctx context.Context, req *http.Request) bool {
 	logger.Debugln("[Filter] duplicate")
 
-	// get domain,url,Method
-	domain := req.Host
-	url := req.URL.Path
-	method := req.Method
+	// format
+	curr := fmt.Sprintf("%s %s %s", req.Method, req.Host, req.URL.Path)
 
 	// duplication
-	db := ctx.Value("db").(database.Database)
-	if db.Exist(domain, url, method) {
+	if slices.Contains(f.history, curr) {
 		logger.Infoln("duplicate data")
 		return FilterBlocked
 	}
+
+	// append to history
+	f.history = append(f.history, curr)
+
 	return FilterPass
 }
 

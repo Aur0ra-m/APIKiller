@@ -1,7 +1,6 @@
 package authorizedDetector
 
 import (
-	"APIKiller/util"
 	"context"
 	"github.com/antlabs/strsim"
 	"io/ioutil"
@@ -14,19 +13,16 @@ var (
 	Fail   = false
 )
 
-//
 // Judge
-//  @Description: Judging whether there is an ultra vires
-//  @param sourceResp
-//  @param newResp
-//  @return bool true-->bypass, false-->fail
 //
-func Judge(ctx context.Context, srcResp, newResp *http.Response) bool {
-	// status code
-	blackStatusCodes := util.GetConfig(ctx, "app.modules.authorizedDetector.judgement.blackStatusCodes")
-	codes := util.SplitConfigString(blackStatusCodes)
-	for _, code := range codes {
-		if strings.Index(newResp.Status, code) != -1 {
+//	@Description: Judging whether there is an ultra vires
+//	@param sourceResp
+//	@param newResp
+//	@return bool true-->bypass, false-->fail
+func (d *AuthorizedDetector) Judge(ctx context.Context, srcResp, newResp *http.Response) bool {
+
+	for _, code := range d.blackStatusCodes {
+		if newResp.StatusCode == code {
 			return Fail
 		}
 	}
@@ -35,9 +31,7 @@ func Judge(ctx context.Context, srcResp, newResp *http.Response) bool {
 	newBody, _ := ioutil.ReadAll(newResp.Body)
 
 	// keywords matching on the response body
-	blackKeywords := util.GetConfig(ctx, "app.modules.authorizedDetector.judgement.blackKeywords")
-	splits := util.SplitConfigString(blackKeywords)
-	for _, split := range splits {
+	for _, split := range d.blackKeywords {
 		if strings.Index(string(newBody), split) != -1 {
 			return Fail
 		}

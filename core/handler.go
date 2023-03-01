@@ -21,7 +21,7 @@ func NewHandler(ctx context.Context, httpItem *origin.TransferItem) {
 		Id:             util.GenerateRandomId(),
 		Domain:         r.Host,
 		Url:            r.URL.Path,
-		Https:          httpItem.Https,
+		Https:          r.URL.Scheme == "https",
 		Method:         r.Method,
 		SourceRequest:  r,
 		SourceResponse: httpItem.Resp,
@@ -47,8 +47,11 @@ func NewHandler(ctx context.Context, httpItem *origin.TransferItem) {
 	//	notifier := ctx.Value("notifier").(notify.Notify)
 	//	notifier.notifyQueue() <- item
 	//}
-	notifier := ctx.Value("notifier").(notify.Notify)
-	notifier.NotifyQueue() <- item
+	notifier := ctx.Value("notifier")
+	if notifier != nil {
+		notifier := ctx.Value("notifier").(notify.Notify)
+		notifier.NotifyQueue() <- item
+	}
 
 	// print result and save result
 	logger.Infoln(fmt.Sprintf("%v %v checkout: %v", item.Domain, item.Url, item.VulnType))

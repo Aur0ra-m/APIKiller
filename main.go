@@ -8,6 +8,7 @@ import (
 	"APIKiller/core/database"
 	"APIKiller/core/filter"
 	"APIKiller/core/module"
+	"APIKiller/core/module/A40xBypasserModule"
 	"APIKiller/core/module/authorizedDetector"
 	"APIKiller/core/module/csrfDetector"
 	"APIKiller/core/notify"
@@ -15,15 +16,14 @@ import (
 	"APIKiller/core/origin/fileInputOrigin"
 	"APIKiller/core/origin/realTimeOrigin"
 	logger "APIKiller/log"
-	"APIKiller/util"
 	"APIKiller/web/backend"
 	"context"
 	"fmt"
-	"os"
+	"github.com/spf13/viper"
 )
 
 const (
-	VERSION = "0.0.2"
+	VERSION = "0.0.3"
 )
 
 func main() {
@@ -37,7 +37,7 @@ func main() {
 	ctx := context.TODO()
 
 	// load database\modules\filters\notifier and so on
-	ctx = loadConfigJsonStr(ctx)
+	ctx = loadConfig(ctx)
 	ctx = loadDatabase(ctx)
 	ctx = loadModules(ctx)
 	ctx = loadFilter(ctx)
@@ -119,9 +119,9 @@ func loadNotifer(ctx context.Context) context.Context {
 
 	var notifer notify.Notify
 
-	if util.GetConfig(ctx, "app.notifier.Lark.webhookUrl") != "" {
+	if viper.GetString("app.notifier.Lark.webhookUrl") != "" {
 		notifer = notify.NewLarkNotifier(ctx)
-	} else if util.GetConfig(ctx, "app.notifier.Dingding.webhookUrl") != "" {
+	} else if viper.GetString("app.notifier.Dingding.webhookUrl") != "" {
 		notifer = notify.NewDingdingNotifer(ctx)
 	} else {
 		return ctx
@@ -168,6 +168,8 @@ func loadModules(ctx context.Context) context.Context {
 	var modules []module.Detecter
 
 	modules = append(modules, authorizedDetector.NewAuthorizedDetector(ctx))
+	modules = append(modules, A40xBypasserModule.NewA40xBypassModule(ctx))
+
 	modules = append(modules, csrfDetector.NewCsrfDetector(ctx))
 
 	return context.WithValue(ctx, "modules", modules)
@@ -177,22 +179,22 @@ func loadFilter(ctx context.Context) context.Context { //only support single fil
 	logger.Infoln("loading filters")
 	var filters []filter.Filter
 
-	filters = append(filters, filter.NewDuplicateFilter())
-	filters = append(filters, filter.NewStaticFileFilter(ctx))
 	filters = append(filters, filter.NewHttpFilter())
+	filters = append(filters, filter.NewStaticFileFilter(ctx))
+	filters = append(filters, filter.NewDuplicateFilter())
 
 	return context.WithValue(ctx, "filters", filters)
 }
 
-func loadConfigJsonStr(ctx context.Context) context.Context {
-	logger.Infoln("loading config into config string")
+func loadConfig(ctx context.Context) context.Context {
+	logger.Infoln("loading config")
 
-	bytes, err := os.ReadFile("config.json")
+	viper.SetConfigFile("D:\\Projects\\GO\\APIKiller\\config.yaml")
 
+	err := viper.ReadInConfig()
 	if err != nil {
-		logger.Errorln("read config file error ", err)
 		panic(err)
 	}
 
-	return context.WithValue(ctx, "configJsonString", string(bytes))
+	return ctx
 }

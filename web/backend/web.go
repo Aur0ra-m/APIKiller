@@ -3,12 +3,12 @@ package backend
 import (
 	"APIKiller/core/data"
 	logger "APIKiller/log"
-	"APIKiller/util"
 	"context"
 	"encoding/base64"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"net/http"
@@ -132,8 +132,8 @@ func Server() {
 func NewAPIServer(ctx context.Context) {
 	server := APIServer{}
 
-	ipaddr := util.GetConfig(ctx, "app.web.ipaddr")
-	port := util.GetConfig(ctx, "app.web.port")
+	ipaddr := viper.GetString("app.web.ipaddr")
+	port := viper.GetString("app.web.port")
 
 	server.init(ipaddr, port)
 }

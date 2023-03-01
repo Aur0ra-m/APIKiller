@@ -29,14 +29,13 @@ func (o *FileInputOrigin) LoadOriginRequest(ctx context.Context, httpItemQueue c
 
 }
 
+// RecoverHttpRequest
 //
-// CreateNewHttp
-//  @Description: create one new http.Request with rawRequest and rawURL
-//  @param rawRequest
-//  @param rawURL
-//  @return *http.Request
-//
-func CreateNewHttp(rawRequest, rawURL, rawResponse string) (*http.Request, *http.Response) {
+//	@Description: create one new http.Request with rawRequest and rawURL
+//	@param rawRequest
+//	@param rawURL
+//	@return *http.Request
+func RecoverHttpRequest(rawRequest, rawURL, rawResponse string) (*http.Request, *http.Response) {
 	b := bufio.NewReader(strings.NewReader(rawRequest))
 
 	req, err := http.ReadRequest(b)

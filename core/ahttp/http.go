@@ -11,17 +11,18 @@ import (
 	"strings"
 )
 
-//
 // DoRequest
-//  @Description: make an http request, and transform body before return response
-//  @param r
-//  @return *http.Response
 //
-func DoRequest(r *http.Request, https bool) *http.Response {
+//	@Description: make a http request, and transform body before return response
+//	@param r
+//	@return *http.Response
+func DoRequest(r *http.Request) *http.Response {
 	var Client http.Client
 
+	//fmt.Println(r.URL.String())
+
 	// https request
-	if https {
+	if r.URL.Scheme == "https" {
 		// ignore certificate verification
 		tr := &http.Transport{
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},

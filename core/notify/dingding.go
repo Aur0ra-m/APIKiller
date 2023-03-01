@@ -4,10 +4,10 @@ import (
 	http2 "APIKiller/core/ahttp"
 	"APIKiller/core/data"
 	logger "APIKiller/log"
-	"APIKiller/util"
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/spf13/viper"
 	"net/http"
 )
 
@@ -45,14 +45,14 @@ func (d *Dingding) Notify(item *data.DataItem) {
 	request, _ := http.NewRequest("POST", d.webhookUrl, bytes.NewBuffer(jsonData))
 	request.Header.Set("Content-Type", "application/json; charset=UTF-8")
 
-	response := http2.DoRequest(request, false)
+	response := http2.DoRequest(request)
 
 	defer response.Body.Close()
 }
 
 func NewDingdingNotifer(ctx context.Context) *Dingding {
 	// get config
-	webhookUrl := util.GetConfig(ctx, "app.notifier.Dingding.webhookUrl")
+	webhookUrl := viper.GetString("app.notifier.Dingding.webhookUrl")
 	// create
 	notifer := &Dingding{webhookUrl: webhookUrl}
 

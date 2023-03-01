@@ -172,8 +172,8 @@
 					getAllList() {  //获取列表的全部信息
                         console.log("GetAllList function")
 	
-						var url = host+"/list" //本地返回数据, 动态
-						fetch(url,{
+						var Url = host+"/list" //本地返回数据, 动态
+						fetch(Url,{
 							method: 'get'
 						})
 				           .then(res => {
@@ -234,8 +234,8 @@
                 console.log("update CheckState function")
                 console.log(Id, state)
 
-                let url = host + '/checked'
-                fetch(url, {
+                let Url = host + '/checked'
+                fetch(Url, {
                     method: 'post',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',

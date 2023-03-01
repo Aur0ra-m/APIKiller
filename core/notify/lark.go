@@ -4,13 +4,13 @@ import (
 	http2 "APIKiller/core/ahttp"
 	"APIKiller/core/data"
 	logger "APIKiller/log"
-	"APIKiller/util"
 	"bytes"
 	"context"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
+	"github.com/spf13/viper"
 	"net/http"
 	"time"
 )
@@ -57,17 +57,16 @@ func (l *Lark) init() {
 
 }
 
-//
 // NewLarkNotifier
-//  @Description: create a lark object
-//  @param webhook lark webhook url
-//  @param signature lark webhook authorize parameter(optional)
-//  @return *Lark
 //
+//	@Description: create a lark object
+//	@param webhook lark webhook url
+//	@param signature lark webhook authorize parameter(optional)
+//	@return *Lark
 func NewLarkNotifier(ctx context.Context) *Lark {
 	// get config
-	webhookUrl := util.GetConfig(ctx, "app.notifier.Lark.webhookUrl")
-	secret := util.GetConfig(ctx, "app.notifier.Lark.secret")
+	webhookUrl := viper.GetString("app.notifier.Lark.webhookUrl")
+	secret := viper.GetString("app.notifier.Lark.secret")
 
 	// create
 	lark := &Lark{
@@ -110,7 +109,7 @@ func (l *Lark) Notify(item *data.DataItem) {
 	request, _ := http.NewRequest("POST", l.webhookUrl, bytes.NewBuffer(jsonData))
 	request.Header.Set("Content-Type", "application/json; charset=UTF-8")
 
-	response := http2.DoRequest(request, false)
+	response := http2.DoRequest(request)
 
 	defer response.Body.Close()
 }

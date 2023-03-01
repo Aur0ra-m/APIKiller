@@ -5,13 +5,13 @@ import (
 	"APIKiller/core/aio"
 	"APIKiller/core/origin"
 	logger "APIKiller/log"
-	"APIKiller/util"
 	"bytes"
 	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
 	"github.com/elazarl/goproxy"
+	"github.com/spf13/viper"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -22,8 +22,8 @@ type RealTimeOrigin struct {
 
 func (r *RealTimeOrigin) LoadOriginRequest(ctx context.Context, httpItemQueue chan *origin.TransferItem) {
 	// get config
-	address := util.GetConfig(ctx, "app.origin.realTime.address")
-	port := util.GetConfig(ctx, "app.origin.realTime.port")
+	address := viper.GetString("app.origin.realTime.address")
+	port := viper.GetString("app.origin.realTime.port")
 	if address == "" || port == "" {
 		panic("Config error: have not set address or port properly")
 	}
@@ -48,12 +48,11 @@ func NewRealTimeOrigin() *RealTimeOrigin {
 	return &RealTimeOrigin{}
 }
 
-//
 // proxyN
-//  @Description: Get httpItem objects through goproxy project
-//  @param httpItemQueue
-//  @return *goproxy.ProxyHttpServer
 //
+//	@Description: Get httpItem objects through goproxy project
+//	@param httpItemQueue
+//	@return *goproxy.ProxyHttpServer
 func proxyN(httpItemQueue chan *origin.TransferItem) *goproxy.ProxyHttpServer {
 	proxy := goproxy.NewProxyHttpServer()
 
@@ -90,9 +89,8 @@ func proxyN(httpItemQueue chan *origin.TransferItem) *goproxy.ProxyHttpServer {
 
 		// transport ctx.Req via channel
 		httpItemQueue <- &origin.TransferItem{
-			Req:   request,
-			Resp:  response,
-			Https: resp.TLS != nil,
+			Req:  request,
+			Resp: response,
 		}
 
 		return resp

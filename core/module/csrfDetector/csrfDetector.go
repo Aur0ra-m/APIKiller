@@ -5,30 +5,35 @@ import (
 	"APIKiller/core/data"
 	"APIKiller/core/module"
 	logger "APIKiller/log"
-	"APIKiller/util"
 	"context"
 	"fmt"
 	"github.com/antlabs/strsim"
+	"github.com/spf13/viper"
 	"io/ioutil"
 	"net/http"
 	"regexp"
 	"strings"
+	"sync"
 )
 
 type CsrfDetector struct {
 	csrfTokenPattern   string
 	csrfInvalidPattern string
 	samesitePolicy     map[string]string
+	mu                 sync.Mutex
 }
 
 func (d *CsrfDetector) Detect(ctx context.Context, item *data.DataItem) {
 	resp := item.SourceResponse
 	req := item.SourceRequest
 
-	// same-site check
+	// same-site check with lock
+	d.mu.Lock()
 	if d.samesitePolicy[req.Host] == "" {
 		d.getSameSitePolicy(ctx, item)
 	}
+	d.mu.Unlock()
+
 	policy := d.samesitePolicy[req.Host]
 	if policy == "Strict" {
 		return
@@ -87,7 +92,7 @@ func (d *CsrfDetector) Detect(ctx context.Context, item *data.DataItem) {
 	}
 
 	// make request
-	response := http2.DoRequest(request, item.Https)
+	response := http2.DoRequest(request)
 	if response == nil {
 		return
 	}
@@ -101,19 +106,18 @@ func (d *CsrfDetector) Detect(ctx context.Context, item *data.DataItem) {
 	}
 }
 
-//
 // getSameSitePolicy
-//  @Description: get same-site policy from response received from the request deleted cookie
-//  @receiver d
-//  @param ctx
-//  @param item
 //
+//	@Description: get same-site policy from response received from the request deleted cookie
+//	@receiver d
+//	@param ctx
+//	@param item
 func (d *CsrfDetector) getSameSitePolicy(ctx context.Context, item *data.DataItem) {
 	// copy request
 	request := http2.RequestClone(item.SourceRequest)
 	// delete cookie and get set-cookie header from response
 	request.Header.Del("Cookie")
-	response := http2.DoRequest(request, item.Https)
+	response := http2.DoRequest(request)
 	setCookie := response.Header.Get("Set-Cookie")
 
 	var policy string
@@ -133,12 +137,11 @@ func (d *CsrfDetector) getSameSitePolicy(ctx context.Context, item *data.DataIte
 	logger.Infoln(fmt.Sprintf("Host: %s, Same-Site policy: %s", key, policy))
 }
 
-//
 // judge
-//  @Description:
-//  @receiver d
-//  @return bool  true -- exists vulnerable
 //
+//	@Description:
+//	@receiver d
+//	@return bool  true -- exists vulnerable
 func (d *CsrfDetector) judge(srcResponse, response *http.Response) bool {
 	// get response body
 	bytes, _ := ioutil.ReadAll(srcResponse.Body)
@@ -152,20 +155,16 @@ func (d *CsrfDetector) judge(srcResponse, response *http.Response) bool {
 }
 
 func NewCsrfDetector(ctx context.Context) module.Detecter {
-	if util.GetConfig(ctx, "app.modules.csrfDetector.option") == "0" {
+	if viper.GetInt("app.module.csrfDetector.option") == 0 {
 		return nil
 	}
 
 	logger.Infoln("[Load Module] csrf detector module")
 
-	// get config
-	csrfTokenPattern := util.GetConfig(ctx, "app.modules.csrfDetector.csrfTokenPattern")
-	csrfInvalidPattern := util.GetConfig(ctx, "app.modules.csrfDetector.csrfInvalidPattern")
-
 	// instantiate csrfDetector
 	detector := &CsrfDetector{
-		csrfTokenPattern:   csrfTokenPattern,
-		csrfInvalidPattern: csrfInvalidPattern,
+		csrfTokenPattern:   viper.GetString("app.module.csrfDetector.csrfTokenPattern"),
+		csrfInvalidPattern: viper.GetString("app.module.csrfDetector.csrfInvalidPattern"),
 		samesitePolicy:     make(map[string]string, 100),
 	}
 

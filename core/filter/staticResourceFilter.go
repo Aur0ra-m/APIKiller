@@ -2,20 +2,14 @@ package filter
 
 import (
 	logger "APIKiller/log"
-	"APIKiller/util"
 	"context"
+	"github.com/spf13/viper"
 	"net/http"
 	"strings"
 )
 
 type StaticResourceFilter struct {
 	forbidenExts []string
-}
-
-func (f *StaticResourceFilter) init(ctx context.Context) {
-	// parse config
-	extString := util.GetConfig(ctx, "app.filters.staticFileFilter.ext")
-	f.forbidenExts = util.SplitConfigString(extString)
 }
 
 func (f *StaticResourceFilter) Filter(ctx context.Context, req *http.Request) bool {
@@ -41,9 +35,7 @@ func (f *StaticResourceFilter) Filter(ctx context.Context, req *http.Request) bo
 func NewStaticFileFilter(ctx context.Context) Filter {
 	logger.Infoln("[Load Filter] static file filter")
 
-	f := &StaticResourceFilter{}
-
-	f.init(ctx)
-
-	return f
+	return &StaticResourceFilter{
+		forbidenExts: viper.GetStringSlice("app.filter.staticFileFilter.ext"),
+	}
 }

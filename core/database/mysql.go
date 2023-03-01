@@ -7,6 +7,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"github.com/spf13/viper"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"strconv"
@@ -102,13 +103,12 @@ func (m *Mysql) AddInfo(item *data.DataItem) {
 	m.db.Create(&itemStr)
 }
 
-//
 // addHttpItem
-//  @Description: store request or response in form of string and return id
-//  @receiver m
-//  @param item
-//  @return string
 //
+//	@Description: store request or response in form of string and return id
+//	@receiver m
+//	@param item
+//	@return string
 func (m *Mysql) addHttpItem(itemStr string) string {
 	// substr if itemStr is too long
 	if len(itemStr) > 10000 {
@@ -141,13 +141,12 @@ func (m *Mysql) getHttpItembyId(Id string) string {
 	return string(decodeString)
 }
 
-//
 // addHttpItems
-//  @Description: store requests or responses in form of string and return ids seperated by comma
-//  @receiver m
-//  @param item
-//  @return string
 //
+//	@Description: store requests or responses in form of string and return ids seperated by comma
+//	@receiver m
+//	@param item
+//	@return string
 func (m *Mysql) addHttpItems(items []string) string {
 	if len(items) == 0 {
 		return ""
@@ -163,7 +162,7 @@ func (m *Mysql) addHttpItems(items []string) string {
 	return strings.Join(Ids, ",")
 }
 
-//test data: connect("192.168.52.153", "3306","apikiller", "root","123456")
+// test data: connect("192.168.52.153", "3306","apikiller", "root","123456")
 func (m *Mysql) connect(host, port, dbname, username, password string) {
 	//dsn := "user:pass@tcp(127.0.0.1:3306)/dbname?charset=utf8mb4&parseTime=True&loc=Local"
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", username, password, host, port, dbname)
@@ -177,11 +176,10 @@ func (m *Mysql) connect(host, port, dbname, username, password string) {
 	m.db = db
 }
 
-//
 // init
-//  @Description:
-//  @receiver m
 //
+//	@Description:
+//	@receiver m
 func (m *Mysql) init() {
 
 }
@@ -193,11 +191,11 @@ func NewMysqlClient(ctx context.Context) *Mysql {
 	mysqlcli.init()
 
 	//parse config
-	host := util.GetConfig(ctx, "app.db.mysql.host")
-	port := util.GetConfig(ctx, "app.db.mysql.port")
-	dbname := util.GetConfig(ctx, "app.db.mysql.dbname")
-	username := util.GetConfig(ctx, "app.db.mysql.username")
-	password := util.GetConfig(ctx, "app.db.mysql.password")
+	host := viper.GetString("app.db.mysql.host")
+	port := viper.GetString("app.db.mysql.port")
+	dbname := viper.GetString("app.db.mysql.dbname")
+	username := viper.GetString("app.db.mysql.username")
+	password := viper.GetString("app.db.mysql.password")
 
 	//connect db and return DB object
 	mysqlcli.connect(host, port, dbname, username, password)
