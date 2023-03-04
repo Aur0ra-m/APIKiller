@@ -1,4 +1,17 @@
-# APIKIller
+<img align="center" alt="logo.png" height="200px" src="static/img/img_logo.png" width="auto" />
+
+<h2 align="center">APIKiller-企业API安全保护神</h2>
+<p align="center">
+  <a href="#项目简介">简介</a> •
+  <a href="#项目架构">架构</a> •
+  <a href="#Feature">Feature</a> •
+  <a href="#食用宝典">食用宝典</a> •
+  <a href="#二次开发文档">二次开发文档</a> •
+  <a href="#更新记录">更新</a> •
+  <a href="#项目社区">项目社区</a> •
+  <a href="#致谢">致谢</a>
+</p>
+
 
 
 ## 项目简介
@@ -7,7 +20,7 @@
 详细参考： [快看~项目精髓](https://aur0ra.cn/3-apikiller/)
 
 ## 项目架构
-![img.png](static/img/architecture.jpg)
+<img src="static/img/architecture.jpg" alt="img.png" style="zoom:50%;" />
 
 
 ## Feature
@@ -57,67 +70,84 @@
    ```
    4. 【重点】在 config.yaml 中进行相关配置
    
-   ![img_6.png](static/img/img_6.png)
-2. 安装根目录下的https证书[windows环境]
+
+<img src="static/img/img_6.png" alt="img_6.png" style="zoom:80%;" />
+
+1. 安装根目录下的https证书[windows环境]
    1. 找到根目录下的ca.crt证书  
-   ![img.png](static/img/img.png)
+   <img src="static/img/img.png" alt="img.png" style="zoom:50%;" />
    2. 点击安装即可，将其添加到系统根信任证书颁发位置
-3. 配置漏洞发现通知Webhook
+
+2. 配置漏洞发现通知Webhook
    1. 根据[飞书指导](https://open.feishu.cn/document/ukTMukTMukTM/ucTM5YjL3ETO24yNxkjN)，开启一个bot，并复制相关的webhook【支持secret鉴权操作】
+
    2. 在根路径下的config.json中进行配置(如果有secret，就进行配置)
-   ![img_1.png](static/img/img_1.png)
+       <img align="le"src="static/img/img_1.png" alt="img_1.png" style="zoom: 50%;" />
+
+     
+
    3. 配置成功后，当发现漏洞时，会立即推送漏洞信息
-   ![img_2.png](static/img/img_2.png)
-4. 一键启动【所有的配置都在config.json】
+       <img  src="static/img/img_2.png" alt="img_2.png" style="zoom: 33%;" />
 
-    ![img_4.png](static/img/img_4.png)
-    ![img_3.png](static/img/img_3.png)
-5. ding~，发现新漏洞，快去看鸭
+     
 
-## 必要配置&检测效果展示
-> 基本配置：数据库模块、过滤器模块、通知模块
+3. 一键启动【所有的配置都在config.json】
+
+    <img src="static/img/img_4.png" alt="img_4.png" style="zoom:50%;" align="left" />
+
+    <img align=left src="static/img/img_3.png" alt="img_3.png" style="zoom:50%;" />
+
+4. **ding~，发现新漏洞，快去看鸭**
+
+5. 漏洞运营
+     <img src="static/img/2.jpg" style="zoom: 33%;" />
+
+  
+
+
+
+> **基本配置：数据库模块、过滤器模块、通知模块**
 > 
-> 除基本配置外，还**必须**进行如下的模块配置。（其中的option必须配置为1，才代表启动该模块）
->
+> **除基本配置外，还必须进行如下的模块配置。（其中的option必须配置为1，才代表启动该模块）**
 ### API越权检测
 >这里基于[VAPI越权靶场](https://www.freebuf.com/vuls/332312.html) 进行实战模拟
 配好环境后，先根据项目鉴权机制，提供另一个不同权限的账号，配置好config.yaml
-> 
 1. 根据企业开发规范，配置好越权模块的相关配置
-![img_1.png](static/img/img_20.png)
+<img src="static/img/img_20.png" alt="img_1.png" style="zoom: 50%;" />
 然后启动项目，访问接口
-![img_1.png](static/img/img_21.png)
-![img.png](static/img/img_22.png)
+<img src="static/img/img_21.png" alt="img_1.png" style="zoom:50%;" />
+<img src="static/img/img_22.png" alt="img.png" style="zoom:50%;" />
 **成功检测出越权和csrf**
-![img_3.png](static/img/img_23.png)
+<img src="static/img/img_23.png" alt="img_3.png" style="zoom: 50%;" />
 
 ### 403 bypass模块
 > 当前可以进行大小写、path fuzz、api版本降级等方式，来进行探测
 
-![img.png](static/img/img_030102.png)
-![img.png](static/img/img_030101.png)
+<img src="static/img/img_030102.png" alt="img.png" style="zoom:50%;" />
+<img src="static/img/img_030101.png" alt="img.png" style="zoom:50%;" />
 
 
 ### CSRF检测
 > 基于pikachu靶场，进行漏洞检测
 
 处理csrf模块的配置
-![img.png](static/img/img_030103.png)
-
-![img_1.png](static/img/img_25.png)
-
-![img.png](static/img/img_24.png)
+<img  src="static/img/img_030103.png" alt="img.png" style="zoom: 50%;" />
 
 
 
-## API运营平台
-![](static/img/2.jpg)
+<img src="static/img/img_25.png" alt="img_1.png" style="zoom: 33%;" />	
+
+<img src="static/img/img_24.png" alt="img.png" style="zoom: 80%;" />	
+
+
+
+
 
 
 ## 二次开发文档
 【暂无】
 
-## 更新记录（功能、优化、bugFix）
+## 更新记录
 ### v0.0.2
 - 【功能】修正对https请求的处理
 - 【功能】优化csrf检测模块
@@ -136,22 +166,9 @@
 - 【bugFix】调整全局的chance-recovery 机制为clone机制
 
 
+## 项目社区
 
-## 后期计划
-- [x] 403bypass module
-- [x] 完善其他通知方式的支持
-- [ ] 添加csrf bypass 模块
-- [ ] 支持扫描代理功能
-- [ ] 提供docker版快速搭建能力
-- [ ] 添加ssrf和open redirect检测
-- [ ] 完成二次开发文档介绍
-- [ ] 其他
+<img src="./static/img/img_030301.png" align="center" height="400">
 
-## 欢迎加入
-![img.png](static/img/img_030301.png)
-
-## 感谢
+## 致谢
 【**最后感谢项目中所使用到的各种开源组件的作者**】
-=======
-
->>>>>>> APIKiller v0.0.3
