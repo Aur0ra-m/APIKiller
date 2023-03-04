@@ -1,6 +1,5 @@
-<h1><img align="center" alt="logo.png" height="200px" src="README.assets/img_logo.png" width="auto" /></h1>
-
-<h2 align="center">APIKiller-企业API安全保护神</h2>
+<h2 align="center"><img align="center" alt="logo.png" height="200px" src="README.assets/img_logo.png" width="auto" /><br/><br/>
+APIKiller-企业API安全保护神</h2>
 <p align="center">
   <a href="#项目简介">简介</a> •
   <a href="#项目架构">架构</a> •
@@ -10,7 +9,8 @@
   <a href="#更新记录">更新</a> •
   <a href="#项目社区">项目社区</a> •
   <a href="#致谢">致谢</a>
-</p>
+</p><br/>
+
 
 
 
@@ -20,7 +20,8 @@
 详细参考： [快看~项目精髓](https://aur0ra.cn/3-apikiller/)
 
 ## 项目架构
-<img src="static/img/architecture.jpg" alt="img.png" style="zoom:50%;" />
+
+<img src="static/img/architecture.jpg" alt="img.png" />
 
 
 ## Feature
@@ -70,37 +71,41 @@
    ```
    4. 【重点】在 config.yaml 中进行相关配置
    
+        <img src="static/img/img_6.png" alt="img_6.png" width="80%;" />
 
-<img src="static/img/img_6.png" alt="img_6.png" style="zoom:80%;" />
-
-1. 安装根目录下的https证书[windows环境]
-   1. 找到根目录下的ca.crt证书  
-   <img src="static/img/img.png" alt="img.png" style="zoom:50%;" />
+2. 安装根目录下的https证书[windows环境]
+   1. 找到根目录下的ca.crt证书
+   
+        <img src="static/img/img.png" alt="img.png" height="233"  />
+   
    2. 点击安装即可，将其添加到系统根信任证书颁发位置
 
-2. 配置漏洞发现通知Webhook
-   1. 根据[飞书指导](https://open.feishu.cn/document/ukTMukTMukTM/ucTM5YjL3ETO24yNxkjN)，开启一个bot，并复制相关的webhook【支持secret鉴权操作】
+   3. 配置漏洞发现通知Webhook
+      1. 根据[飞书指导](https://open.feishu.cn/document/ukTMukTMukTM/ucTM5YjL3ETO24yNxkjN)，开启一个bot，并复制相关的webhook【支持secret鉴权操作】
 
-   2. 在根路径下的config.json中进行配置(如果有secret，就进行配置)
-       <img align="le"src="static/img/img_1.png" alt="img_1.png" style="zoom: 50%;" />
+      2. 在根路径下的config.json中进行配置(如果有secret，就进行配置)
+      
+            <img src="static/img/img_1.png" alt="img_1.png" width="80%;" />
 
      
 
    3. 配置成功后，当发现漏洞时，会立即推送漏洞信息
-       <img  src="static/img/img_2.png" alt="img_2.png" style="zoom: 33%;" />
+
+       <img src="static/img/img_2.png" alt="img_2.png" width="80%;" />
 
      
 
-3. 一键启动【所有的配置都在config.json】
+3. 一键启动【所有的配置都在config.yaml】
 
-    <img src="static/img/img_4.png" alt="img_4.png" style="zoom:50%;" align="left" />
+    <img src="static/img/img_4.png" alt="img_4.png" width="80%;"/>
 
-    <img align=left src="static/img/img_3.png" alt="img_3.png" style="zoom:50%;" />
+    <img src="static/img/img_3.png" alt="img_3.png" width="80%;" />
 
 4. **ding~，发现新漏洞，快去看鸭**
 
-5. 漏洞运营
-     <img src="static/img/2.jpg" style="zoom: 33%;" />
+5. 漏洞运营，及时对漏洞进行研判和修复
+
+     <img src="static/img/2.jpg" width="80%;" />
 
   
 
@@ -110,34 +115,34 @@
 > 
 > **除基本配置外，还必须进行如下的模块配置。（其中的option必须配置为1，才代表启动该模块）**
 ### API越权检测
->这里基于[VAPI越权靶场](https://www.freebuf.com/vuls/332312.html) 进行实战模拟
-配好环境后，先根据项目鉴权机制，提供另一个不同权限的账号，配置好config.yaml
+> 这里基于[VAPI越权靶场](https://www.freebuf.com/vuls/332312.html) 进行实战模拟
+> 配好环境后，先根据项目鉴权机制，提供另一个不同权限的账号，配置好config.yaml
 1. 根据企业开发规范，配置好越权模块的相关配置
-<img src="static/img/img_20.png" alt="img_1.png" style="zoom: 50%;" />
-然后启动项目，访问接口
-<img src="static/img/img_21.png" alt="img_1.png" style="zoom:50%;" />
-<img src="static/img/img_22.png" alt="img.png" style="zoom:50%;" />
-**成功检测出越权和csrf**
-<img src="static/img/img_23.png" alt="img_3.png" style="zoom: 50%;" />
+
+    <img src="static/img/img_20.png" alt="img_1.png" width="80%;" />
+2. 启动项目，访问接口<br/>
+    <img src="static/img/img_21.png" alt="img_1.png" width="80%;" /><br/>
+    <img src="static/img/img_22.png" alt="img.png" width="80%;" />
+
+3. **成功检测出越权和csrf**
+
+    <img src="static/img/img_23.png" alt="img_3.png" width="80%;" />
 
 ### 403 bypass模块
 > 当前可以进行大小写、path fuzz、api版本降级等方式，来进行探测
 
-<img src="static/img/img_030102.png" alt="img.png" style="zoom:50%;" />
-<img src="static/img/img_030101.png" alt="img.png" style="zoom:50%;" />
+<img src="static/img/img_030102.png" alt="img.png" width="80%;" /><br/>
+<img src="static/img/img_030101.png" alt="img.png" width="80%;" />
 
 
 ### CSRF检测
 > 基于pikachu靶场，进行漏洞检测
 
-处理csrf模块的配置
-<img  src="static/img/img_030103.png" alt="img.png" style="zoom: 50%;" />
 
-
-
-<img src="static/img/img_25.png" alt="img_1.png" style="zoom: 33%;" />	
-
-<img src="static/img/img_24.png" alt="img.png" style="zoom: 80%;" />	
+处理csrf模块的配置<br/>
+    <img  src="static/img/img_030103.png" alt="img.png" width="80%;" />
+    <img src="static/img/img_25.png" alt="img_1.png" width="80%;" />	
+    <img src="static/img/img_24.png" alt="img.png" width="80%;" />	
 
 
 
