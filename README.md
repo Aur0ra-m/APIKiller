@@ -1,4 +1,4 @@
-<img align="center" alt="logo.png" height="200px" src="static/img/img_logo.png" width="auto" />
+<h1><img align="center" alt="logo.png" height="200px" src="README.assets/img_logo.png" width="auto" /></h1>
 
 <h2 align="center">APIKiller-企业API安全保护神</h2>
 <p align="center">
