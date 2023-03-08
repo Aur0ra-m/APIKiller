@@ -1,4 +1,4 @@
-<h2 align="center"><img align="center" alt="logo.png" height="200px" src="README.assets/img_logo.png" width="auto" /><br/><br/>
+<h2 align="center"><img align="center" alt="logo.png" height="200px" src="static/img/img_logo.png" width="auto" /><br/><br/>
 APIKiller-企业API安全保护神</h2>
 <p align="center">
   <a href="#项目简介">简介</a> •
@@ -31,14 +31,10 @@ APIKiller-企业API安全保护神</h2>
   - 支持历史流量回扫\[目前只支持burpsuite存储流量\]
 - 多功能扫描模块
   - 越权检测模块，高效精准，支持多情景检测
-    - 具备多种鉴权姿势的账号设定
-    - 多维度、特征化判断引擎
   - 40x bypass 模块
-    - 支持常见的架构层的解析不一致导致的风险检测
-    - 支持常见后门检测
-  - csrf检测模块
-    - 支持token检测
-    - 常见的referer、origin检测
+  - csrf 检测模块
+  - open-redirect 检测模块
+  - Dos检测模块【谨慎配置，避免出现大量脏数据】
   - 【欢迎大家积极提PR】
 - 多功能Filter处理，默认自带多个filter
   - 针对性扫描，例如只对 baidu.com域名进行扫描
@@ -52,7 +48,7 @@ APIKiller-企业API安全保护神</h2>
   - ...
 - 对抗常见风控手段
   - 频控
-- **【重磅】以上都可以快速进行拓展&二次开发**
+- **【重磅】以上都可以快速进行二次开发**
 
 ## 食用宝典
 1. 安装好数据库环境（我个人采用的是docker）
@@ -147,6 +143,58 @@ APIKiller-企业API安全保护神</h2>
 
 
 
+## HTTP HOOK机制
+> 为避免扫描时造成过无效流量，可以通过提供的HTTP HOOK机制，对请求流量自定义修改，例如添加header，来区分测试流量和实际流量
+
+【注意】当前由于golang plugin机制特性，暂不支持windows下的流量修改
+
+1. HTTP HOOK 样例
+```go
+package main
+
+import (
+	"fmt"
+	"net/http"
+)
+
+type RequestHook interface {
+	HookBefore(*http.Request) // hook before initiating http request
+	HookAfter(*http.Request)  // hook after finishing http request
+}
+
+type AddHeaderHook struct {
+}
+
+func (a AddHeaderHook) HookBefore(request *http.Request) {
+	fmt.Println("HOOK Before: hhhhhhh")
+	// ....
+}
+
+func (a AddHeaderHook) HookAfter(request *http.Request) {
+
+}
+
+// Hook this is exported, and this name must be set Hook
+var Hook AddHeaderHook
+```
+
+【严格按照上面的代码规范，其中最后一行代码，命名必须设置为Hook】
+
+2. 生成对应的so链接库
+```shell
+go build -buildmode=plugin APIKillerHookSample.go
+```
+
+```shell
+$ ls
+APIKillerHookSample.go  APIKillerHookSample.so  go.mod
+```
+3. 将生成的so放置到项目的hooks目录下
+```shell
+$ ls ./hooks
+APIKillerHookSample.so
+```
+4. 启动项目即可完成流量更改
 
 
 ## 二次开发文档
@@ -170,10 +218,14 @@ APIKiller-企业API安全保护神</h2>
 - 【bugFix】修复线程安全导致的数据重复等问题
 - 【bugFix】调整全局的chance-recovery 机制为clone机制
 
+### v0.0.4
+- 【功能】添加HTTP HOOK功能，可满足区分测试产生的http脏数据、流量清洗功能。[具体使用方式](#HTTP HOOK机制)
+- 【功能】新增开放重定向检测模块，支持对常见的GET Query方式进行测试
+- 【功能】新增DoS安全测试模块，目前可以对查询资源大小未控制导致的DoS进行检测，例如size设置为超大数
+- 【优化】针对之前试用时产生的各种不适进行了一个优化
 
 ## 项目社区
-
-<img src="./static/img/img_030301.png" align="center" height="400">
+<img src="./static/img/img_030801.png" align="center" height="400">
 
 ## 致谢
 【**最后感谢项目中所使用到的各种开源组件的作者**】

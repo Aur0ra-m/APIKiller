@@ -19,11 +19,12 @@ app: # 系统全局配置文件
       judgement: # 判断引擎配置
         blackStatusCodes: # 鉴权失败响应码
           - 403
+          - 401
         blackKeywords: # 鉴权失败响应关键字
           - forbidden
           - error
     40xBypassModule: # 40x bypass探测模块
-      option: 1 # 模块开关
+      option: 0 # 模块开关
       authFailedFlag: # 鉴权失败标志配置
         statusCode: # 鉴权失败响应头
           - 403
@@ -32,10 +33,6 @@ app: # 系统全局配置文件
           - have no permission
           - auth failed
           - usernameOrPasswordIncorrect
-      method: # bypass 请求方法变种
-        - GET
-        - POST
-        - PUT
       ipHeader: # 后端常见请求ip后门（通过特定的header来判断是否是本地请求，从而进行豁免）
         - Access-Control-Allow-Origin
         - Base-Url
@@ -119,10 +116,40 @@ app: # 系统全局配置文件
       option: 0 # 模块开关
       csrfTokenPattern: csrf # token对应的参数名或者请求头
       csrfInvalidPattern: (invalid|csrf) # csrf鉴权失败返回的标识
+    openRedirectDetector: # openRedirect检测
+      option: 1
+      rawQueryParams:
+        - url
+        - redirect
+        - uri
+        - redirection
+        - next
+        - returnto
+        - return_to
+        - origin
+        - callback
+        - authorize_callback
+        - target
+        - link
+      failFlag:
+        - error
+        - fail
+    DoSDetector: # dos检测模块
+      option: 1
+      sizeParam: # 资源查询大小控制参数
+        - size
+        - Size
+      rateLimit:
+        failFlag: # 存在频控的标识
+          - exceed
+          - captcha
+          - too many
+          - rate limit
+          - Maximum login
   filter: # 过滤器配置
     httpFilter: # http过滤器配置：目前只支持根据指定的host，对其进行检测，如果未设置，则默认对所有流量进行检测
       host:
-        - 192.168.52.153
+        - 
     staticFileFilter: # 静态文件过滤器：对获取静态资源的流量不做处理
       ext:
         - js

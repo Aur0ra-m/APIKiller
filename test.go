@@ -2,15 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/spf13/viper"
+	"regexp"
 )
 
 func test() {
-	viper.SetConfigFile("config.yaml")
-
-	err := viper.ReadInConfig()
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(viper.Get("app"))
+	r := regexp.MustCompile(`"` + `key` + `"\s*?:\s*?"?(.*?)?"?,?\s`)
+	strings := r.FindStringSubmatch("{\n    \"key\":\"1\"\n}")
+	fmt.Println(strings)
+	fmt.Println(r.SubexpNames())
 }

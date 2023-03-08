@@ -17,7 +17,7 @@ type AuthorizedDetector struct {
 }
 
 func (d *AuthorizedDetector) Detect(ctx context.Context, item *data.DataItem) {
-	logger.Debugln("[Detect] main authorized detect")
+	logger.Debugln("[Detect] authorized detect")
 
 	d.unauthorizedDetect(ctx, item)
 	for _, t := range item.VulnType {

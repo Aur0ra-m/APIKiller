@@ -76,16 +76,16 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(item, index) in items" :key="item.Id + index">
+          <tr v-for="(paramItem, index) in items" :key="paramItem.Id + index">
             <td v-for="config in fromlistConfigs" :key="config.name">
               <template v-if="config.type === 'text'">
-                {{ item[config.name] }}
+                {{ paramItem[config.name] }}
               </template>
               <template v-if="config.type === 'checkbox'">
                 <input
                   class="form-check-input"
                   type="checkbox"
-                  v-model="item[config.name]"
+                  v-model="paramItem[config.name]"
                   @click="()=>false"
                 />
               </template>
@@ -93,7 +93,7 @@
                 <input
                   class="checkbox"
                   type="checkbox"
-                  v-model="item[config.name]"
+                  v-model="paramItem[config.name]"
                 />
               </template>
               <template v-if="config.type === 'collapse'">
@@ -104,18 +104,18 @@
                         <a
                           data-toggle="collapse"
                           data-parent="#accordion"
-                          :href="`#item${ config.name }${ item.Id }${ index }`"
+                          :href="`#paramItem${ config.name }${ paramItem.Id }${ index }`"
                         >
                           {{ config.name }}
                         </a>
                       </h4>
                     </div>
                     <div
-                      :id="`item${ config.name }${ item.Id }${ index }`"
+                      :id="`paramItem${ config.name }${ paramItem.Id }${ index }`"
                       class="panel-collapse collapse"
                     >
                       <div class="panel-body ap-ob-break">
-                        {{ item[config.name] }}
+                        {{ paramItem[config.name] }}
                       </div>
                     </div>
                   </div>
@@ -217,7 +217,7 @@
                   Id = Id.substring(2) //截取cb
                   this.updateCheckState(Id, state)
                 } else {
-                  // updateCheckState(item.Id, 0)
+                  // updateCheckState(paramItem.Id, 0)
                 }
               },
             })

@@ -1,6 +1,7 @@
 package ahttp
 
 import (
+	"APIKiller/core/ahttp/hook"
 	"APIKiller/core/aio"
 	logger "APIKiller/log"
 	"APIKiller/util"
@@ -10,6 +11,8 @@ import (
 	"net/url"
 	"strings"
 )
+
+var hooks []hook.RequestHook
 
 // DoRequest
 //
@@ -36,10 +39,20 @@ func DoRequest(r *http.Request) *http.Response {
 		Client = http.Client{}
 	}
 
+	// hook before initiating http request
+	for _, requestHook := range hooks {
+		requestHook.HookBefore(r)
+	}
+
 	response, err := Client.Do(r)
 	if err != nil {
 		logger.Errorln(err)
 		return nil
+	}
+
+	// hook after finishing http request
+	for _, requestHook := range hooks {
+		requestHook.HookAfter(r)
 	}
 
 	// transform aio.Reader
@@ -48,6 +61,15 @@ func DoRequest(r *http.Request) *http.Response {
 	}
 
 	return response
+}
+
+//
+// RegisterHooks
+//  @Description: append http request hook to modify request data
+//  @param requestHook
+//
+func RegisterHooks(requestHook hook.RequestHook) {
+	hooks = append(hooks, requestHook)
 }
 
 func RequestClone(src *http.Request) *http.Request {

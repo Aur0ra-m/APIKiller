@@ -3,6 +3,7 @@ package A40xBypasserModule
 import (
 	"APIKiller/core/ahttp"
 	"APIKiller/core/data"
+	"APIKiller/core/module"
 	logger "APIKiller/log"
 	"context"
 	"fmt"
@@ -32,19 +33,19 @@ type A40xBypassModule struct {
 
 func (a *A40xBypassModule) Detect(ctx context.Context, item *data.DataItem) {
 	logger.Debugln("[Detect] 40x bypass")
-	req := item.SourceRequest
-	resp := item.SourceResponse
+	srcReq := item.SourceRequest
+	srcResp := item.SourceResponse
 
 	// t represent the auth failed type(e.g. code:1, body:2), and the v represent value
 	t := 0
 	var v interface{}
 
-	if !slices.Contains(a.codeFlags, resp.StatusCode) {
+	if !slices.Contains(a.codeFlags, srcResp.StatusCode) {
 
 		return
 	}
-	if t == 0 && resp.Body != nil {
-		allbytes, _ := ioutil.ReadAll(resp.Body)
+	if t == 0 && srcResp.Body != nil {
+		allbytes, _ := ioutil.ReadAll(srcResp.Body)
 		body := string(allbytes)
 
 		for _, keyword := range a.bodyFlags {
@@ -61,7 +62,7 @@ func (a *A40xBypassModule) Detect(ctx context.Context, item *data.DataItem) {
 		return
 	}
 
-	request := ahttp.RequestClone(req)
+	request := ahttp.RequestClone(srcReq)
 	var (
 		vulnRequest  *http.Request
 		vulnResponse *http.Response
@@ -73,13 +74,13 @@ func (a *A40xBypassModule) Detect(ctx context.Context, item *data.DataItem) {
 	// architecture layer detect
 	a.mu.Lock()
 
-	if slices.Contains(a.records, req.Host) == false {
+	if slices.Contains(a.records, srcReq.Host) == false {
 		// record
-		a.records = append(a.records, req.Host)
+		a.records = append(a.records, srcReq.Host)
 
 		// path bypass
 		if vulnRequest == nil {
-			vulnRequest, vulnResponse = a.pathBypass(ctx, request, resp, t, v)
+			vulnRequest, vulnResponse = a.pathBypass(ctx, request, srcResp, t, v)
 		}
 
 		// protocol version
@@ -90,7 +91,7 @@ func (a *A40xBypassModule) Detect(ctx context.Context, item *data.DataItem) {
 	// api layer
 	if vulnRequest == nil {
 		// api version bypass
-		vulnRequest, vulnResponse = a.apiVersionBypass(ctx, request, resp, t, v)
+		vulnRequest, vulnResponse = a.apiVersionBypass(ctx, request, srcResp, t, v)
 	}
 
 	// save result
@@ -118,7 +119,7 @@ func (a *A40xBypassModule) pathBypass(ctx context.Context, srcRequest *http.Requ
 
 	// /admin/get --> /admin/Get
 	requestClone = ahttp.RequestClone(srcRequest)
-	ahttp.URLPathCase(requestClone.URL)
+	ahttp.ModifyURLPathCase(requestClone.URL)
 	response := ahttp.DoRequest(requestClone)
 	if a.judge(ctx, t, v, srcResponse, response) {
 		return requestClone, response
@@ -127,7 +128,7 @@ func (a *A40xBypassModule) pathBypass(ctx context.Context, srcRequest *http.Requ
 	// /admin/get --> /admin/./get
 	for _, midPadding := range a.midPaddings {
 		requestClone = ahttp.RequestClone(srcRequest)
-		ahttp.URLPathMidPad(requestClone.URL, midPadding)
+		ahttp.ModifyURLPathMidPad(requestClone.URL, midPadding)
 		response := ahttp.DoRequest(requestClone)
 		if a.judge(ctx, t, v, srcResponse, response) {
 			return requestClone, response
@@ -137,7 +138,7 @@ func (a *A40xBypassModule) pathBypass(ctx context.Context, srcRequest *http.Requ
 	// /admin/get --> /admin/get;.css
 	for _, endPadding := range a.endPaddings {
 		requestClone = ahttp.RequestClone(srcRequest)
-		ahttp.URLPathEndPad(requestClone.URL, endPadding)
+		ahttp.ModifyURLPathEndPad(requestClone.URL, endPadding)
 		response := ahttp.DoRequest(requestClone)
 		if a.judge(ctx, t, v, srcResponse, response) {
 			return requestClone, response
@@ -183,7 +184,7 @@ func (a *A40xBypassModule) apiVersionBypass(ctx context.Context, srcRequest *htt
 
 		for i := 1; i < version; i++ {
 			requestClone := ahttp.RequestClone(srcRequest)
-			ahttp.URLPathAPIVerionModify(requestClone.URL, foundString, fmt.Sprintf("/%s%d/", a.apiVersionPrefix, i))
+			ahttp.ModifyURLPathAPIVerion(requestClone.URL, foundString, fmt.Sprintf("/%s%d/", a.apiVersionPrefix, i))
 			response := ahttp.DoRequest(requestClone)
 			if a.judge(ctx, t, v, srcResponse, response) {
 				return requestClone, response
@@ -227,7 +228,7 @@ func (a *A40xBypassModule) judge(ctx context.Context, t int, value interface{}, 
 	return true
 }
 
-func NewA40xBypassModule(ctx context.Context) *A40xBypassModule {
+func NewA40xBypassModule(ctx context.Context) module.Detecter {
 	if viper.GetInt("app.module.40xBypassModule.option") == 0 {
 		return nil
 	}

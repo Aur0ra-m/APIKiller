@@ -1,4 +1,4 @@
-package csrfDetector
+package CSRFDetector
 
 import (
 	http2 "APIKiller/core/ahttp"
@@ -16,25 +16,27 @@ import (
 	"sync"
 )
 
-type CsrfDetector struct {
+type CSRFDetector struct {
 	csrfTokenPattern   string
 	csrfInvalidPattern string
 	samesitePolicy     map[string]string
 	mu                 sync.Mutex
 }
 
-func (d *CsrfDetector) Detect(ctx context.Context, item *data.DataItem) {
-	resp := item.SourceResponse
-	req := item.SourceRequest
+func (d *CSRFDetector) Detect(ctx context.Context, item *data.DataItem) {
+	logger.Debugln("[Detect] CSRF detect")
+
+	srcResp := item.SourceResponse
+	srcReq := item.SourceRequest
 
 	// same-site check with lock
 	d.mu.Lock()
-	if d.samesitePolicy[req.Host] == "" {
+	if d.samesitePolicy[srcReq.Host] == "" {
 		d.getSameSitePolicy(ctx, item)
 	}
 	d.mu.Unlock()
 
-	policy := d.samesitePolicy[req.Host]
+	policy := d.samesitePolicy[srcReq.Host]
 	if policy == "Strict" {
 		return
 	} else if policy == "Lax" && item.Method != "GET" {
@@ -44,13 +46,13 @@ func (d *CsrfDetector) Detect(ctx context.Context, item *data.DataItem) {
 	}
 
 	// cors--Access-Control-Allow-Origin
-	value := resp.Header.Get("Access-Control-Allow-Origin")
+	value := srcResp.Header.Get("Access-Control-Allow-Origin")
 	if value != "" && value != "*" {
 		return
 	}
 
 	// copy request
-	request := http2.RequestClone(req)
+	request := http2.RequestClone(srcReq)
 
 	// delete referer and origin
 	if request.Header.Get("Referer") != "" {
@@ -98,7 +100,7 @@ func (d *CsrfDetector) Detect(ctx context.Context, item *data.DataItem) {
 	}
 
 	// judge and save result
-	if d.judge(resp, response) {
+	if d.judge(srcResp, response) {
 
 		item.VulnType = append(item.VulnType, "csrf")
 		item.VulnRequest = append(item.VulnRequest, request)
@@ -112,7 +114,7 @@ func (d *CsrfDetector) Detect(ctx context.Context, item *data.DataItem) {
 //	@receiver d
 //	@param ctx
 //	@param item
-func (d *CsrfDetector) getSameSitePolicy(ctx context.Context, item *data.DataItem) {
+func (d *CSRFDetector) getSameSitePolicy(ctx context.Context, item *data.DataItem) {
 	// copy request
 	request := http2.RequestClone(item.SourceRequest)
 	// delete cookie and get set-cookie header from response
@@ -142,7 +144,7 @@ func (d *CsrfDetector) getSameSitePolicy(ctx context.Context, item *data.DataIte
 //	@Description:
 //	@receiver d
 //	@return bool  true -- exists vulnerable
-func (d *CsrfDetector) judge(srcResponse, response *http.Response) bool {
+func (d *CSRFDetector) judge(srcResponse, response *http.Response) bool {
 	// get response body
 	bytes, _ := ioutil.ReadAll(srcResponse.Body)
 	bytes2, _ := ioutil.ReadAll(response.Body)
@@ -155,16 +157,16 @@ func (d *CsrfDetector) judge(srcResponse, response *http.Response) bool {
 }
 
 func NewCsrfDetector(ctx context.Context) module.Detecter {
-	if viper.GetInt("app.module.csrfDetector.option") == 0 {
+	if viper.GetInt("app.module.CSRFDetector.option") == 0 {
 		return nil
 	}
 
 	logger.Infoln("[Load Module] csrf detector module")
 
-	// instantiate csrfDetector
-	detector := &CsrfDetector{
-		csrfTokenPattern:   viper.GetString("app.module.csrfDetector.csrfTokenPattern"),
-		csrfInvalidPattern: viper.GetString("app.module.csrfDetector.csrfInvalidPattern"),
+	// instantiate CSRFDetector
+	detector := &CSRFDetector{
+		csrfTokenPattern:   viper.GetString("app.module.CSRFDetector.csrfTokenPattern"),
+		csrfInvalidPattern: viper.GetString("app.module.CSRFDetector.csrfInvalidPattern"),
 		samesitePolicy:     make(map[string]string, 100),
 	}
 
