@@ -221,7 +221,7 @@ APIKillerHookSample.so
 - 【bugFix】调整全局的chance-recovery 机制为clone机制
   
 ### v0.0.4
-- 【功能】添加HTTP HOOK功能，可满足区分测试产生的http脏数据、流量清洗功能。<a href="#HTTP HOOK机制">HOOK食用方式</a>
+- 【功能】添加HTTP HOOK功能，可满足区分测试产生的http脏数据、流量清洗功能。<a href="#http-hook机制">HOOK食用方式</a>
 - 【功能】新增开放重定向检测模块，支持对常见的GET Query方式进行测试
 - 【功能】新增DoS安全测试模块，目前可以对查询资源大小未控制导致的DoS进行检测，例如size设置为超大数
 - 【优化】针对之前试用时产生的各种不适进行了一个优化
