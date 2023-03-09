@@ -210,18 +210,32 @@ func loadConfig(ctx context.Context) context.Context {
 }
 
 func loadHooks(ctx context.Context) context.Context {
-	logger.Infoln("loading hooks")
-
 	// except windows os
 	if runtime.GOOS == "windows" {
 		logger.Errorln("not support windows operation system")
 		return ctx
 	}
 
+	logger.Infoln("loading hooks")
+
+	// ./hooks directory does not exist
+	_, err2 := os.Stat("./hooks")
+	if os.IsNotExist(err2) {
+		logger.Errorln("target directory does not exist")
+
+		// make directory
+		err := os.Mkdir("./hooks", os.ModePerm)
+		if err != nil {
+			panic(err)
+		}
+
+		return ctx
+	}
+
 	// list directory
 	entries, err := os.ReadDir("./hooks")
 	if err != nil {
-		logger.Errorln("loading hooks error: %v", err)
+		logger.Errorln(fmt.Sprintf("loading hooks error: %v", err))
 		panic(entries)
 	}
 
