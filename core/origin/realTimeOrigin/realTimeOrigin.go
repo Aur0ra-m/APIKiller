@@ -21,6 +21,7 @@ type RealTimeOrigin struct {
 }
 
 func (r *RealTimeOrigin) LoadOriginRequest(ctx context.Context, httpItemQueue chan *origin.TransferItem) {
+	logger.Infoln("[Load Request] load request from real time origin")
 	// get config
 	address := viper.GetString("app.origin.realTime.address")
 	port := viper.GetString("app.origin.realTime.port")

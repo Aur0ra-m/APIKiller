@@ -185,7 +185,7 @@ func loadModules(ctx context.Context) context.Context {
 	return context.WithValue(ctx, "modules", modules)
 }
 
-func loadFilter(ctx context.Context) context.Context { //only support single filter currently
+func loadFilter(ctx context.Context) context.Context {
 	logger.Infoln("loading filters")
 	var filters []filter.Filter
 

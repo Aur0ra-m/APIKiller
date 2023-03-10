@@ -53,6 +53,7 @@ APIKiller-企业API安全保护神</h2>
 - **【重磅】以上都可以快速进行二次开发**
 
 ## 食用宝典
+> 详细请查看：https://github.com/Aur0ra-m/APIKiller/wiki
 1. 安装好数据库环境（我个人采用的是docker）
    1. docker pull 数据库镜像
    ```shell
@@ -151,56 +152,56 @@ APIKiller-企业API安全保护神</h2>
 【注意】当前由于golang plugin机制特性，暂不支持windows下的流量修改
 
 1. HTTP HOOK 样例
-```go
-package main
-
-import (
-	"fmt"
-	"net/http"
-)
-
-type RequestHook interface {
-	HookBefore(*http.Request) // hook before initiating http request
-	HookAfter(*http.Request)  // hook after finishing http request
-}
-
-type AddHeaderHook struct {
-}
-
-func (a AddHeaderHook) HookBefore(request *http.Request) {
-	fmt.Println("HOOK Before: hhhhhhh")
-	// ....
-}
-
-func (a AddHeaderHook) HookAfter(request *http.Request) {
-
-}
-
-// Hook this is exported, and this name must be set Hook
-var Hook AddHeaderHook
-```
+    ```go
+    package main
+    
+    import (
+        "fmt"
+        "net/http"
+    )
+    
+    type RequestHook interface {
+        HookBefore(*http.Request) // hook before initiating http request
+        HookAfter(*http.Request)  // hook after finishing http request
+    }
+    
+    type AddHeaderHook struct {
+    }
+    
+    func (a AddHeaderHook) HookBefore(request *http.Request) {
+        fmt.Println("HOOK Before: hhhhhhh")
+        // ....
+    }
+    
+    func (a AddHeaderHook) HookAfter(request *http.Request) {
+    
+    }
+    
+    // Hook this is exported, and this name must be set Hook
+    var Hook AddHeaderHook
+    ```
 
 【严格按照上面的代码规范，其中最后一行代码，命名必须设置为Hook】
 
 2. 生成对应的so链接库
-```shell
-go build -buildmode=plugin APIKillerHookSample.go
-```
+    ```shell
+    go build -buildmode=plugin APIKillerHookSample.go
+    ```
 
-```shell
-$ ls
-APIKillerHookSample.go  APIKillerHookSample.so  go.mod
-```
+    ```shell
+    $ ls
+    APIKillerHookSample.go  APIKillerHookSample.so  go.mod
+    ```
 3. 将生成的so放置到项目的hooks目录下
-```shell
-$ ls ./hooks
-APIKillerHookSample.so
-```
+    ```shell
+    $ ls ./hooks
+    APIKillerHookSample.so
+    ```
 4. 启动项目即可完成流量更改
 
 
 ## 二次开发文档
-【暂无】
+https://github.com/Aur0ra-m/APIKiller/wiki
 
 ## 更新记录
 ### v0.0.2
@@ -226,8 +227,13 @@ APIKillerHookSample.so
 - 【功能】新增DoS安全测试模块，目前可以对查询资源大小未控制导致的DoS进行检测，例如size设置为超大数
 - 【优化】针对之前试用时产生的各种不适进行了一个优化
 
-## 项目社区
-<img src="./static/img/img_030801.png" align="center" height="400">
+### v0.0.5
+- 【!】项目wiki以及二次开发文档第一版发布
 
+## 项目社区
+如想对项目进行深入了解，或加入研发团队欢迎加入APIKiller项目社区。<br>
+群二维码失效可加我微信，备注：私聊回复APIKiller 实时进群<br>
+<img src="./static/img/img_030801.png" align="center" height="400">
+<img src="./static/img/img_030901.png" align="center" height="400">
 ## 致谢
 【**最后感谢项目中所使用到的各种开源组件的作者**】

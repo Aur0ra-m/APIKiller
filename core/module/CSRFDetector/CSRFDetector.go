@@ -18,7 +18,7 @@ import (
 
 type CSRFDetector struct {
 	csrfTokenPattern   string
-	csrfInvalidPattern string
+	csrfInvalidPattern []string
 	samesitePolicy     map[string]string
 	mu                 sync.Mutex
 }
@@ -145,14 +145,23 @@ func (d *CSRFDetector) getSameSitePolicy(ctx context.Context, item *data.DataIte
 //	@receiver d
 //	@return bool  true -- exists vulnerable
 func (d *CSRFDetector) judge(srcResponse, response *http.Response) bool {
-	// get response body
-	bytes, _ := ioutil.ReadAll(srcResponse.Body)
 	bytes2, _ := ioutil.ReadAll(response.Body)
+
+	// black keyword match
+	for _, s := range d.csrfInvalidPattern {
+		if strings.Contains(string(bytes2), s) {
+			return false
+		}
+	}
+
+	// body similarity compare
+	bytes, _ := ioutil.ReadAll(srcResponse.Body)
 
 	sim := strsim.Compare(string(bytes), string(bytes2))
 	if sim > 0.9 {
 		return true
 	}
+
 	return false
 }
 
@@ -166,7 +175,7 @@ func NewCsrfDetector(ctx context.Context) module.Detecter {
 	// instantiate CSRFDetector
 	detector := &CSRFDetector{
 		csrfTokenPattern:   viper.GetString("app.module.CSRFDetector.csrfTokenPattern"),
-		csrfInvalidPattern: viper.GetString("app.module.CSRFDetector.csrfInvalidPattern"),
+		csrfInvalidPattern: viper.GetStringSlice("app.module.CSRFDetector.csrfInvalidPattern"),
 		samesitePolicy:     make(map[string]string, 100),
 	}
 

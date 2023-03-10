@@ -239,7 +239,7 @@ func modifyPostBody(req *http.Request, paramItemRegExp string, paramKVSeparator 
 	// read data from body
 	all, err := ioutil.ReadAll(req.Body)
 	if err != nil {
-		logger.Errorln("modify post data error:%v", err)
+		logger.Errorln(fmt.Sprintf("modify post data error:%v", err))
 		panic(err)
 	}
 	body := string(all)
