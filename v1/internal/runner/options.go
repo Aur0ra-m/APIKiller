@@ -6,4 +6,5 @@ import "APIKiller/v1/pkg/types"
 func ParseOptions(options *types.Options) {
 	// Show the user banner
 	showBanner()
+
 }
