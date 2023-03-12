@@ -2,6 +2,7 @@ package main
 
 import (
 	"APIKiller/v1/internal/runner"
+	"APIKiller/v1/pkg/config"
 	"APIKiller/v1/pkg/types"
 	"flag"
 )
@@ -26,7 +27,8 @@ func readConfig() *flag.FlagSet {
 
 	// parse go flags
 	_ = runner.Parse(flagSet)
-	// parse configuration file
+	// load config file
+	config.Setup(options)
 
 	return flagSet
 }

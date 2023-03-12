@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"APIKiller/v1/pkg/types"
@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-const VERSION = "0.0.4"
+const VERSION = "0.0.5"
 
 type Config struct {
 	Db       DbConfig       `mapstructure:"db"`
@@ -105,9 +105,9 @@ func have(path string) bool {
 	return err == nil
 }
 
-func GetConfigFile(options *types.Options) string {
-	if options.ConfigFile != "" {
-		return options.ConfigFile
+func getConfigFile(configPath string) string {
+	if configPath != "" {
+		return configPath
 	}
 	return getDefaultConfigFile()
 }
@@ -138,9 +138,29 @@ func loadConfigFromFile(path string, conf *Config) {
 	}
 }
 
-func main() {
-	config := Config{}
-	cfgPath := getDefaultConfigFile()
-	loadConfigFromFile(cfgPath, &config)
+var GlobalConfig *Config
 
+func Setup(options *types.Options) {
+	config := getDefaultConfig()
+	configPath := getConfigFile(options.ConfigFile)
+	loadConfigFromFile(configPath, config)
+	GlobalConfig = config
+	log.Printf("load config successfully!\n")
+}
+
+func GetConf() *Config {
+	if GlobalConfig == nil {
+		return getDefaultConfig()
+	}
+	return GlobalConfig
+}
+
+func getDefaultConfig() *Config {
+	return &Config{}
+}
+
+func main() {
+	config := getDefaultConfig()
+	cfgPath := getDefaultConfigFile()
+	loadConfigFromFile(cfgPath, config)
 }
