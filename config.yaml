@@ -1,11 +1,11 @@
 app: # 系统全局配置文件
   db: # 数据库配置(当前只支持mysql)
     mysql: # mysql
-      host: 192.168.52.153
+      host: 121.40.251.109
       port: '3306'
       dbname: apikiller
       username: root
-      password: '123456'
+      password: 'zengjiahua123'
   origin: # 数据源配置
     realTime: # 实时监听数据源配置
       address: 127.0.0.1
@@ -149,7 +149,7 @@ app: # 系统全局配置文件
   filter: # 过滤器配置
     httpFilter: # http过滤器配置：目前只支持根据指定的host，对其进行检测，如果未设置，则默认对所有流量进行检测
       host:
-        - 
+        -
     staticFileFilter: # 静态文件过滤器：对获取静态资源的流量不做处理
       ext:
         - js

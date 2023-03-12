@@ -1,0 +1,172 @@
+db: # 数据库配置(当前只支持mysql)
+  mysql: # mysql
+    host: 127.0.0.1
+    port: 3306
+    dbname: apikiller
+    username: root
+    password: 123456
+origin: # 数据源配置
+  realTime: # 实时监听数据源配置
+    address: 127.0.0.1
+    port: '8080' # 监听端口
+detector: # 核心模块配置
+  authorizedDetector: # 未授权&越权检测模块配置
+    enable: 0 # 模块开关
+    authHeader: Authorization-Token # 探测系统使用的鉴权头，例如cookie、X-Signature或自定义鉴权头
+    roles: # 不同权限的鉴权头value（目前只处理第一个角色）
+      - Z3Vlc3QxOjEyMzEyMw==
+    judgement: # 判断引擎配置
+      blackStatusCodes: # 鉴权失败响应码
+        - 403
+        - 401
+      blackKeywords: # 鉴权失败响应关键字
+        - forbidden
+        - error
+  40xBypassDetector: # 40x bypass探测模块
+    enable: 0 # 模块开关
+    authFailedFlag: # 鉴权失败标志配置
+      statusCode: # 鉴权失败响应头
+        - 403
+        - 401
+      body: # 鉴权失败响应体配置
+        - have no permission
+        - auth failed
+        - usernameOrPasswordIncorrect
+    ipHeader: # 后端常见请求ip后门（通过特定的header来判断是否是本地请求，从而进行豁免）
+      - Access-Control-Allow-Origin
+      - Base-Url
+      - CF-Connecting_IP
+      - CF-Connecting-IP
+      - Client-IP
+      - Cluster-Client-IP
+      - Destination
+      - Forwarded-For-Ip
+      - Forwarded-For
+      - Forwarded-Host
+      - Forwarded
+      - Host
+      - Http-Url
+      - Origin
+      - Profile
+      - Proxy-Host
+      - Proxy-Url
+      - Proxy
+      - Real-Ip
+      - Redirect
+      - Referer
+      - Referrer
+      - Request-Uri
+      - True-Client-IP
+      - Uri
+      - Url
+      - X-Arbitrary
+      - X-Client-IP
+      - X-Custom-IP-Authorization
+      - X-Forward-For
+      - X-Forward
+      - X-Forwarded-By
+      - X-Forwarded-For-Original
+      - X-Forwarded-For
+      - X-Forwarded-Host
+      - X-Forwarded-Proto
+      - X-Forwarded-Server
+      - X-Forwarded
+      - X-Forwarder-For
+      - X-Host
+      - X-HTTP-DestinationURL
+      - X-HTTP-Host-Override
+      - X-Original-Remote-Addr
+      - X-Original-URL
+      - X-Originally-Forwarded-For
+      - X-Originating-IP
+      - X-Proxy-Url
+      - X-ProxyUser-Ip
+      - X-Real-Ip
+      - X-Real-IP
+      - X-Referrer
+      - X-Remote-Addr
+      - X-Remote-IP
+      - X-Rewrite-URL
+      - X-True-IP
+      - X-WAP-Profile
+    ip: 127.0.0.1 # 特定豁免ip
+    apiVersion: # api版本格式，例如有 /apiv1/或者/api/v1/等，如下是/api1/的示例
+      format: "api\\d"
+      prefix: "api"
+    pathFuzz: # 路径fuzz列表
+      midPadding:
+        - "/"
+        - "/."
+        - "/..;"
+        - ".;"
+        - ";/"
+        - "//;/"
+      endPadding:
+        - "?"
+        - "??"
+        - "."
+        - ".."
+        - "./"
+        - "%20"
+        - "%09"
+        - "%0a"
+        - "#"
+  csrfDetector: # csrf检测模块
+    enable: 0 # 模块开关
+    csrfToken: csrf # token对应的参数名或者请求头
+    csrfInvalidPattern: (invalid|csrf) # csrf鉴权失败返回的标识
+  openRedirectDetector: # openRedirect检测
+    enable: 1
+    rawQueryParams:
+      - url
+      - redirect
+      - uri
+      - redirection
+      - next
+      - returnto
+      - return_to
+      - origin
+      - callback
+      - authorize_callback
+      - target
+      - link
+    failFlag:
+      - error
+      - fail
+  DoSDetector: # dos检测模块
+    enable: 1
+    sizeParam: # 资源查询大小控制参数
+      - size
+      - Size
+    rateLimit:
+      failFlag: # 存在频控的标识
+        - exceed
+        - captcha
+        - too many
+        - rate limit
+        - Maximum login
+filter: # 过滤器配置
+  httpFilter: # http过滤器配置：目前只支持根据指定的host，对其进行检测，如果未设置，则默认对所有流量进行检测
+    host:
+      -
+  staticFileFilter: # 静态文件过滤器：对获取静态资源的流量不做处理
+    ext:
+      - js
+      - gif
+      - jpg
+      - png
+      - css
+      - jpeg
+      - xml
+      - img
+      - svg
+      - ico
+notifier: # 通知方式配置
+  Lark: # Lark飞书（支持token检验）
+    webhookUrl: ''
+    secret: ''
+  Dingding: # 钉钉
+    webhookUrl: ''
+web: # web运营平台配置
+  host: 127.0.0.1
+  port: '80'
