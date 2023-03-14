@@ -17,6 +17,7 @@ type Config struct {
 	Filter   FilterConfig   `mapstructure:"filter"`
 	Notifier NotifierConfig `mapstructure:"notifier"`
 	Web      WebConfig      `mapstructure:"web"`
+	Log      LogConfig      `mapstructure:"log"`
 }
 
 type DbConfig struct {
@@ -98,6 +99,11 @@ type NotifierConfig struct {
 type WebConfig struct {
 	Host string `mapstructure:"host"`
 	port string `mapstructure:"port"`
+}
+
+type LogConfig struct {
+	Level   string `mapstructure:"level"`
+	DirPath string `mapstructure:"path"`
 }
 
 func have(path string) bool {

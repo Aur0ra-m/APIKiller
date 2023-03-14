@@ -17,3 +17,11 @@ func New(options *types.Options, config *config.Config) (*Runner, error) {
 		config:  config,
 	}, nil
 }
+
+func (r *Runner) Run() error {
+	return nil
+}
+
+func (r *Runner) Close() {
+
+}

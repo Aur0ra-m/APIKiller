@@ -170,3 +170,6 @@ notifier: # 通知方式配置
 web: # web运营平台配置
   host: 127.0.0.1
   port: '80'
+log:
+  level: debug
+  path: /tmp
