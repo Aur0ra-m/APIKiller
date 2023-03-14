@@ -1,7 +1,7 @@
 package config
 
 import (
-	"APIKiller/v1/pkg/types"
+	"APIKiller/pkg/types"
 	"github.com/spf13/viper"
 	"log"
 	"os"

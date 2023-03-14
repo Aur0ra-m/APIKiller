@@ -1,6 +1,8 @@
 package runner
 
-import "APIKiller/v1/pkg/types"
+import (
+	"APIKiller/pkg/types"
+)
 
 // ParseOptions parses the command line flags provided by user
 func ParseOptions(options *types.Options) {

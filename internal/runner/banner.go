@@ -1,7 +1,7 @@
 package runner
 
 import (
-	"APIKiller/v1/pkg/config"
+	"APIKiller/pkg/config"
 	"fmt"
 )
 
