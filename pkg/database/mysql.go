@@ -20,19 +20,29 @@ type MysqlConn struct {
 	itemAddQueue chan *types.DataItem
 }
 
-func NewMysqlConnection(config *config.Config) *MysqlConn {
+func NewMysqlConnection(config *config.Config) (*MysqlConn, error) {
 	dbCfg := config.Db.Mysql
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s",
 		dbCfg.Username, dbCfg.Password, dbCfg.Host, dbCfg.Port, dbCfg.Schema)
 	conn, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Errorln("Connect database error", err)
-		panic(err)
+		return nil, err
 	}
 
-	return &MysqlConn{
-		db: conn,
+	mysqlConn := &MysqlConn{
+		db:           conn,
+		itemAddQueue: make(chan *types.DataItem, 100),
 	}
+	go func() {
+		var item *types.DataItem
+		for {
+			item = <-mysqlConn.ItemAddQueue()
+			mysqlConn.AddInfo(item)
+		}
+	}()
+
+	return mysqlConn, nil
 }
 
 func (m *MysqlConn) ItemAddQueue() chan *types.DataItem {
