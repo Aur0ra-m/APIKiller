@@ -10,12 +10,13 @@ type Runner struct {
 	config  *config.Config
 }
 
-func New(options *types.Options, config *config.Config) (*Runner, error) {
-
-	return &Runner{
+func New(options *types.Options, cfg *config.Config) (*Runner, error) {
+	runner := &Runner{
 		options: options,
-		config:  config,
-	}, nil
+		config:  cfg,
+	}
+
+	return runner, nil
 }
 
 func (r *Runner) Run() error {

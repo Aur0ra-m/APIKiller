@@ -1,8 +1,8 @@
 package backend
 
 import (
-	"APIKiller/core/data"
-	logger "APIKiller/log"
+	"APIKiller/pkg/logger"
+	"APIKiller/pkg/types"
 	"context"
 	"encoding/base64"
 	"fmt"
@@ -54,7 +54,7 @@ func (s *APIServer) getHttpItembyId(Id string) string {
 	// convert string to id
 	id, _ := strconv.Atoi(Id)
 
-	item := &data.HttpItem{}
+	item := &types.HttpItem{}
 
 	s.db().Find(item).Where("id = ?", id)
 
@@ -67,11 +67,11 @@ func (s *APIServer) getHttpItembyId(Id string) string {
 func (s *APIServer) updateCheckState(c *gin.Context) {
 	c.Writer.Header().Set("Access-Control-Allow-Origin", "*") // ignore CORS
 
-	var v data.DataItemStr
+	var v types.DataItemStr
 	_ = c.ShouldBindJSON(&v)
 	tx := s.db().Model(&v).Where("Id=?", c.PostForm("Id")).Update("CheckState", false)
 	if tx.Error != nil {
-		logger.Errorln(tx.Error.Error())
+		logger.Error(tx.Error.Error())
 	}
 	c.JSON(http.StatusOK, "success！")
 }
@@ -81,7 +81,7 @@ func (s *APIServer) list(c *gin.Context) {
 
 	_ = c.Bind(&s)
 
-	items := make([]data.DataItemStr, 1024)
+	items := make([]types.DataItemStr, 1024)
 
 	s.db().Find(&items)
 
