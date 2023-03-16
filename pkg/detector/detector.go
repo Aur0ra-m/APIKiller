@@ -4,6 +4,8 @@ import (
 	"APIKiller/pkg/config"
 	"APIKiller/pkg/detector/authorize"
 	"APIKiller/pkg/detector/bypass"
+	"APIKiller/pkg/detector/csrf"
+	"APIKiller/pkg/detector/openredirect"
 	"APIKiller/pkg/types"
 )
 
@@ -16,6 +18,8 @@ func NewDetectors(cfg *config.Config) []Detector {
 
 	detectors = append(detectors, authorize.NewUnauthorizedDetector(cfg))
 	detectors = append(detectors, bypass.New40xBypassDetector(cfg))
+	detectors = append(detectors, csrf.NewCsrfDetector(cfg))
+	detectors = append(detectors, openredirect.NewOpenRedirectDetector(cfg))
 
 	return detectors
 }

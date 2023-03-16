@@ -3,14 +3,16 @@ package runner
 import (
 	"APIKiller/pkg/config"
 	"APIKiller/pkg/database"
+	"APIKiller/pkg/detector"
 	"APIKiller/pkg/logger"
 	"APIKiller/pkg/types"
 )
 
 type Runner struct {
-	options *types.Options
-	config  *config.Config
-	db      *database.MysqlConn
+	options   *types.Options
+	config    *config.Config
+	db        *database.MysqlConn
+	detectors []detector.Detector
 }
 
 func New(options *types.Options, cfg *config.Config) (*Runner, error) {
@@ -24,10 +26,13 @@ func New(options *types.Options, cfg *config.Config) (*Runner, error) {
 		return nil, err
 	}
 
+	detectors := detector.NewDetectors(cfg)
+
 	runner := &Runner{
-		options: options,
-		config:  cfg,
-		db:      mysqlConn,
+		options:   options,
+		config:    cfg,
+		db:        mysqlConn,
+		detectors: detectors,
 	}
 
 	return runner, nil

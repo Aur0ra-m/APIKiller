@@ -114,7 +114,9 @@ detector: # 核心模块配置
   csrfDetector: # csrf检测模块
     enable: 0 # 模块开关
     csrfToken: csrf # token对应的参数名或者请求头
-    csrfInvalidPattern: (invalid|csrf) # csrf鉴权失败返回的标识
+    csrfInvalidPattern:
+      - invalid
+      - csrf # csrf鉴权失败返回的标识
   openRedirectDetector: # openRedirect检测
     enable: 1
     rawQueryParams:

@@ -57,9 +57,9 @@ type A40xBypassConfig struct {
 }
 
 type CsrfConfig struct {
-	Enable             bool   `mapstructure:"enable"`
-	CsrfToken          string `mapstructure:"csrfToken"`
-	CsrfInvalidPattern string `mapstructure:"csrfInvalidPattern"`
+	Enable             bool     `mapstructure:"enable"`
+	CsrfToken          string   `mapstructure:"csrfToken"`
+	CsrfInvalidPattern []string `mapstructure:"csrfInvalidPattern"`
 }
 
 type OpenRedirectConfig struct {
