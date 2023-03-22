@@ -13,7 +13,7 @@ type Detector interface {
 	Detect(item *types.DataItem)
 }
 
-func NewDetectors(cfg *config.Config) []Detector {
+func NewDetectors(cfg *config.DetectorConfig) []Detector {
 	var detectors []Detector
 
 	detectors = append(detectors, authorize.NewUnauthorizedDetector(cfg))

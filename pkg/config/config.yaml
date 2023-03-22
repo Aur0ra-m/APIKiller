@@ -170,6 +170,7 @@ notifier: # 通知方式配置
   Dingding: # 钉钉
     webhookUrl: ''
 web: # web运营平台配置
+  enable: true
   host: 127.0.0.1
   port: '80'
 log:

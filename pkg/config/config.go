@@ -97,8 +97,9 @@ type NotifierConfig struct {
 }
 
 type WebConfig struct {
-	Host string `mapstructure:"host"`
-	port string `mapstructure:"port"`
+	Host   string `mapstructure:"host"`
+	Port   string `mapstructure:"port"`
+	Enable bool   `mapstructure:"enable"`
 }
 
 type LogConfig struct {

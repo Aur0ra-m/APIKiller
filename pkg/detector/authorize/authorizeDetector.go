@@ -41,8 +41,8 @@ func (d *AuthorizedDetector) unauthorizedDetect(item *types.DataItem) {
 	}
 }
 
-func NewUnauthorizedDetector(cfg *config.Config) detector.Detector {
-	authConf := cfg.Detector.Authorize
+func NewUnauthorizedDetector(cfg *config.DetectorConfig) detector.Detector {
+	authConf := cfg.Authorize
 	if !authConf.Enable {
 		return nil
 	}

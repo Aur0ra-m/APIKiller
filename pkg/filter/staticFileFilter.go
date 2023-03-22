@@ -31,8 +31,8 @@ func (f *StaticResourceFilter) Filter(req *http.Request) bool {
 	return FilterPass
 }
 
-func NewStaticFileFilter(cfg *config.Config) Filter {
-	staticCfg := cfg.Filter.StaticFile
+func NewStaticFileFilter(cfg *config.FilterConfig) Filter {
+	staticCfg := cfg.StaticFile
 	logger.Debug("[Load Filter] static file filter\n")
 
 	return &StaticResourceFilter{

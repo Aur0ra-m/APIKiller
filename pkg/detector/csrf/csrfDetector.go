@@ -163,8 +163,8 @@ func (d *CsrfDetector) judge(srcResponse, response *http.Response) bool {
 	return false
 }
 
-func NewCsrfDetector(cfg *config.Config) detector.Detector {
-	csrfCfg := cfg.Detector.Csrf
+func NewCsrfDetector(cfg *config.DetectorConfig) detector.Detector {
+	csrfCfg := cfg.Csrf
 	if csrfCfg.Enable {
 		return nil
 	}

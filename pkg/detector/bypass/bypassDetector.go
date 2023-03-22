@@ -221,8 +221,8 @@ func (b *BypassDetector) judge(t int, value interface{}, srcResp, newResp *http.
 	return true
 }
 
-func New40xBypassDetector(cfg *config.Config) detector.Detector {
-	bypassCfg := cfg.Detector.A40xBypass
+func New40xBypassDetector(cfg *config.DetectorConfig) detector.Detector {
+	bypassCfg := cfg.A40xBypass
 	if !bypassCfg.Enable {
 		return nil
 	}

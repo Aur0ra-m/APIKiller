@@ -14,7 +14,7 @@ type Filter interface {
 	Filter(*http.Request) bool
 }
 
-func NewFilter(cfg *config.Config) []Filter {
+func NewFilter(cfg *config.FilterConfig) []Filter {
 	var filters []Filter
 
 	filters = append(filters, NewHttpFilter(cfg))

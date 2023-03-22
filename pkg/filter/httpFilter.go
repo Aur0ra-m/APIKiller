@@ -30,8 +30,8 @@ func (f *HttpFilter) Filter(req *http.Request) bool {
 	return FilterPass // default
 }
 
-func NewHttpFilter(cfg *config.Config) Filter {
-	httpCfg := cfg.Filter.Http
+func NewHttpFilter(cfg *config.FilterConfig) Filter {
+	httpCfg := cfg.Http
 	logger.Info("[Load Filter] http filter\n")
 
 	return &HttpFilter{

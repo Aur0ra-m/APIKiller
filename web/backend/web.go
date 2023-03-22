@@ -1,9 +1,9 @@
 package backend
 
 import (
+	"APIKiller/pkg/config"
 	"APIKiller/pkg/logger"
 	"APIKiller/pkg/types"
-	"context"
 	"encoding/base64"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -129,7 +129,7 @@ func Server() {
 	server.init("127.0.0.1", "80")
 }
 
-func NewAPIServer(ctx context.Context) {
+func NewAPIServer(cfg *config.WebConfig) {
 	server := APIServer{}
 
 	ipaddr := viper.GetString("app.web.ipaddr")

@@ -66,8 +66,8 @@ func (d *OpenRedirectDetector) judge(oldResp, newResp *http.Response) bool {
 	return true
 }
 
-func NewOpenRedirectDetector(cfg *config.Config) detector.Detector {
-	openCfg := cfg.Detector.OpenRedirect
+func NewOpenRedirectDetector(cfg *config.DetectorConfig) detector.Detector {
+	openCfg := cfg.OpenRedirect
 	if openCfg.Enable {
 		return nil
 	}

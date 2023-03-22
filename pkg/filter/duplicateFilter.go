@@ -30,7 +30,7 @@ func (f *DuplicateFilter) Filter(req *http.Request) bool {
 	return FilterPass
 }
 
-func NewDuplicateFilter(cfg *config.Config) *DuplicateFilter {
+func NewDuplicateFilter(cfg *config.FilterConfig) *DuplicateFilter {
 	logger.Info("[Load Filter] duplicate filter\n")
 	return &DuplicateFilter{}
 }

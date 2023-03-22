@@ -1,4 +1,4 @@
-package main
+package hooks
 
 import (
 	"APIKiller/pkg/config"
