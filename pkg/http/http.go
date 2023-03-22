@@ -37,7 +37,7 @@ func DoRequest(r *http.Request) *http.Response {
 		Client = http.Client{}
 	}
 
-	// hook before initiating http request
+	// hooks before initiating http request
 	for _, requestHook := range hooks {
 		requestHook.HookBefore(r)
 	}
@@ -48,7 +48,7 @@ func DoRequest(r *http.Request) *http.Response {
 		return nil
 	}
 
-	// hook after finishing http request
+	// hooks after finishing http request
 	for _, requestHook := range hooks {
 		requestHook.HookAfter(r)
 	}
@@ -63,7 +63,7 @@ func DoRequest(r *http.Request) *http.Response {
 
 // RegisterHooks
 //
-//	@Description: append http request hook to modify request data
+//	@Description: append http request hooks to modify request data
 //	@param requestHook
 func RegisterHooks(requestHook hook.RequestHook) {
 	hooks = append(hooks, requestHook)

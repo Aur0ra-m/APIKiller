@@ -46,7 +46,7 @@ func Initial() {
 		Formatter:  formatter,
 	})
 	if err != nil {
-		fmt.Printf("Create log rotate hook error: %s\n", err)
+		fmt.Printf("Create log rotate hooks error: %s\n", err)
 		return
 	}
 	logger.AddHook(rotateFileHook)
