@@ -1,7 +1,7 @@
 package filter
 
 import (
-	logger "APIKiller/log"
+	logger "APIKiller/logger"
 	"context"
 	"github.com/spf13/viper"
 	"net/http"

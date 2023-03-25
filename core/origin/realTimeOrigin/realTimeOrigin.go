@@ -4,7 +4,7 @@ import (
 	"APIKiller/core/ahttp"
 	"APIKiller/core/aio"
 	"APIKiller/core/origin"
-	logger "APIKiller/log"
+	logger "APIKiller/logger"
 	"bytes"
 	"context"
 	"crypto/tls"

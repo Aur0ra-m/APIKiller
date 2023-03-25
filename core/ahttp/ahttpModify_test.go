@@ -29,7 +29,7 @@ func TestModifyPostFormParameter(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ModifyPostFormParameter(tt.args.req, tt.args.paramName, tt.args.newValue)
+			modifyPostFormParam(tt.args.req, tt.args.paramName, tt.args.newValue)
 		})
 	}
 }

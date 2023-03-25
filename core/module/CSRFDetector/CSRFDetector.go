@@ -4,9 +4,8 @@ import (
 	http2 "APIKiller/core/ahttp"
 	"APIKiller/core/data"
 	"APIKiller/core/module"
-	logger "APIKiller/log"
+	logger "APIKiller/logger"
 	"context"
-	"fmt"
 	"github.com/antlabs/strsim"
 	"github.com/spf13/viper"
 	"io/ioutil"
@@ -136,7 +135,7 @@ func (d *CSRFDetector) getSameSitePolicy(ctx context.Context, item *data.DataIte
 	key := request.Host
 	d.samesitePolicy[key] = policy
 
-	logger.Infoln(fmt.Sprintf("Host: %s, Same-Site policy: %s", key, policy))
+	//logger.Infoln(fmt.Sprintf("Host: %s, Same-Site policy: %s", key, policy))
 }
 
 // judge
@@ -165,7 +164,7 @@ func (d *CSRFDetector) judge(srcResponse, response *http.Response) bool {
 	return false
 }
 
-func NewCsrfDetector(ctx context.Context) module.Detecter {
+func NewCSRFDetector(ctx context.Context) module.Detecter {
 	if viper.GetInt("app.module.CSRFDetector.option") == 0 {
 		return nil
 	}

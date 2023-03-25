@@ -1,7 +1,7 @@
 package filter
 
 import (
-	logger "APIKiller/log"
+	logger "APIKiller/logger"
 	"context"
 	"fmt"
 	"golang.org/x/exp/slices"

@@ -3,14 +3,15 @@ package DoSDetector
 import (
 	"APIKiller/core/data"
 	"APIKiller/core/module"
-	logger "APIKiller/log"
+	logger "APIKiller/logger"
 	"github.com/spf13/viper"
 	"golang.org/x/net/context"
 )
 
 type DosDetector struct {
-	d1 *rateLimitDetector
-	d2 *resourceSizeDetector
+	typeFlag string
+	d1       *rateLimitDetector
+	d2       *resourceSizeDetector
 }
 
 func (d DosDetector) Detect(ctx context.Context, item *data.DataItem) {
@@ -21,10 +22,10 @@ func (d DosDetector) Detect(ctx context.Context, item *data.DataItem) {
 
 	// the size of resource lack of control
 	d.d2.Detect(ctx, item)
-	
+
 }
 
-func NewDosDetector(ctx context.Context) module.Detecter {
+func NewDoSDetector(ctx context.Context) module.Detecter {
 	if viper.GetInt("app.module.DoSDetector.option") == 0 {
 		return nil
 	}
@@ -32,7 +33,8 @@ func NewDosDetector(ctx context.Context) module.Detecter {
 	logger.Infoln("[Load Module] DoS detect module")
 
 	return &DosDetector{
-		d1: newRateLimitDetector(),
-		d2: newResourceSizeDetector(),
+		typeFlag: viper.GetString("app.module.DoSDetector.typeFlag"),
+		d1:       newRateLimitDetector(),
+		d2:       newResourceSizeDetector(),
 	}
 }

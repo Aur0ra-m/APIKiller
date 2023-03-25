@@ -4,7 +4,7 @@ import (
 	http2 "APIKiller/core/ahttp"
 	"APIKiller/core/data"
 	"APIKiller/core/module"
-	logger "APIKiller/log"
+	logger "APIKiller/logger"
 	"context"
 	"github.com/spf13/viper"
 )

@@ -2,7 +2,7 @@ package ahttp
 
 import (
 	"APIKiller/core/aio"
-	logger "APIKiller/log"
+	logger "APIKiller/logger"
 	"bytes"
 	"fmt"
 	"io/ioutil"
@@ -143,88 +143,154 @@ func ModifyURLPathAPIVerion(Url *url.URL, srcString, targetString string) {
 }
 
 //
-// ModifyURLQueryParameter
-//  @Description: modify parameters in form of url query
+// ModifyParam
+//  @Description: modify all positions parameter
 //  @param req
 //  @param paramName
 //  @param newValue
+//  @return bool
 //
-func ModifyURLQueryParameter(req *http.Request, paramName string, newValue []string) {
-	req.URL.RawQuery = strings.Replace(req.URL.RawQuery, paramName+"="+req.URL.Query()[paramName][0], paramName+"="+newValue[0], 1)
+func ModifyParam(req *http.Request, paramName string, newValue string) *http.Request {
+
+	newReq := ModifyQueryParam(req, paramName, newValue)
+
+	if newReq != nil {
+		return newReq
+	}
+
+	newReq = ModifyPostParam(req, paramName, newValue)
+
+	if newReq != nil {
+		return newReq
+	}
+
+	return nil
 }
 
 //
-// ModifyPostFormParameter
-//  @Description: modify simple post form data with newValue
+// ModifyQueryParam
+//  @Description: modify url query parameter
 //  @param req
 //  @param paramName
 //  @param newValue
+//  @return *http.Request
 //
-//func ModifyPostFormParameter(req *http.Request, paramName string, newValue string) {
-//	// read data from body
-//	all, err := ioutil.ReadAll(req.Body)
-//	if err != nil {
-//		logger.Errorln("modify post data error:%v", err)
-//		panic(err)
-//	}
-//	body := string(all)
-//
-//	// split data with &
-//	splits := strings.Split(body, "&")
-//
-//	// replace data and join again
-//	for i, _ := range splits {
-//		kv := strings.Split(splits[i], "=")
-//		if kv[0] == paramName {
-//			splits[i] = kv[0] + "=" + newValue
-//			break
-//		}
-//	}
-//
-//	newBody := strings.Join(splits, "&")
-//
-//	// back-fill body
-//	req.Body = aio.TransformReadCloser(bytes.NewReader([]byte(newBody)))
-//
-//	// update Content-Length
-//	req.Header.Set("Content-Length", fmt.Sprintf("%d", len(newBody)))
-//}
+func ModifyQueryParam(req *http.Request, paramName string, newValue string) *http.Request {
+	queryParams := req.URL.Query()
+	if queryParams.Get(paramName) != "" {
+		// clone a new newReq
+		newReq := RequestClone(req)
+
+		req.URL.RawQuery = strings.Replace(newReq.URL.RawQuery, paramName+"="+newReq.URL.Query()[paramName][0], paramName+"="+newValue, 1)
+		return newReq
+	}
+
+	return nil
+}
 
 //
-// ModifyPostJsonParameter
+// ModifyPostParam
+//  @Description: modify post body parameter through Content-Type in request
+//  @param req
+//  @param paramName
+//  @param newValue
+//  @return *http.Request
+//
+func ModifyPostParam(req *http.Request, paramName string, newValue string) *http.Request {
+	ct := req.Header.Get("Content-Type")
+
+	// determine whether the request does have a body or not
+	if ct == "" {
+		logger.Debugln("target request does not have Content-Type header")
+		return nil
+	}
+
+	readAll, _ := ioutil.ReadAll(req.Body)
+	bodyStr := string(readAll)
+
+	var newReq *http.Request
+	if ct == "application/x-www-form-urlencoded" {
+		if strings.Contains(bodyStr, paramName+"=") {
+			newReq = RequestClone(req)
+
+			modifyPostFormParam(newReq, paramName, newValue)
+		}
+	} else if ct == "application/json" {
+		if strings.Contains(bodyStr, paramName+"=") {
+			newReq = RequestClone(req)
+
+			modifyPostJsonParam(newReq, paramName, newValue)
+		}
+	} else if ct == "application/xml" {
+		if strings.Contains(bodyStr, paramName+"=") {
+			newReq = RequestClone(req)
+
+			modifyPostXMLParam(newReq, paramName, newValue)
+		}
+	} else if strings.Contains(ct, "multipart/form-data") {
+		if strings.Contains(bodyStr, paramName+"=") {
+			newReq = RequestClone(req)
+
+			modifyPostMultiDataParam(newReq, paramName, newValue)
+		}
+	} else {
+		logger.Errorln("Not support other Content-Type")
+		return nil
+	}
+
+	return newReq
+}
+
+//
+// modifyPostXMLParam
+//  @Description: modify xml data with newValue
+//  @param req
+//  @param name
+//  @param value
+//
+func modifyPostXMLParam(req *http.Request, paramName string, newValue string) {
+	paramItemRegExp := `<` + paramName + `>(.*?)<`
+
+	modifyPostBody(req, paramItemRegExp, ">", newValue)
+}
+
+//
+// modifyPostJsonParam
 //  @Description: modify simple post json data with newValue
 //  @param req
 //  @param paramName
 //  @param newValue
 //
-func ModifyPostJsonParameter(req *http.Request, paramName string, newValue string) {
+func modifyPostJsonParam(req *http.Request, paramName string, newValue string) {
 	paramItemRegExp := `"` + paramName + `"\s*?:\s*?"?(.*?)?"?,?\s`
 
 	modifyPostBody(req, paramItemRegExp, ":", newValue)
 }
 
 //
-// ModifyPostFormParameter
+// modifyPostFormParam
 //  @Description: modify simple post form data with newValue
 //  @param req
 //  @param paramName
 //  @param newValue
 //
-func ModifyPostFormParameter(req *http.Request, paramName string, newValue string) {
+func modifyPostFormParam(req *http.Request, paramName string, newValue string) {
 	paramItemRegExp := paramName + `=(.*?)&?\s?`
 
 	modifyPostBody(req, paramItemRegExp, "=", newValue)
 }
 
 //
-// ModifyPostMultiDataParameter
+// modifyPostMultiDataParam
 //  @Description: modify post parameter in form of multi-data
 //  @param req
 //  @param paramName
 //  @param newValue
 //
-func ModifyPostMultiDataParameter(req *http.Request, paramName string, newValue string) {
-	//
+func modifyPostMultiDataParam(req *http.Request, paramName string, newValue string) {
+	paramItemRegExp := "name=\"" + paramName + "\".*?" + "\r\n\r\n" + `(.*)`
+
+	modifyPostBody(req, paramItemRegExp, "\r\n\r\n", newValue)
 }
 
 //
@@ -267,4 +333,44 @@ func modifyPostBody(req *http.Request, paramItemRegExp string, paramKVSeparator 
 
 	// update Content-Length
 	req.Header.Set("Content-Length", fmt.Sprintf("%d", len(newBody)))
+}
+
+//
+// AppendHeader
+//  @Description: append new header to request
+//  @param req
+//  @param header
+//  @param value
+//
+func AppendHeader(req *http.Request, header string, value string) {
+	req.Header.Add(header, value)
+}
+
+//
+// RemoveHeader
+//  @Description: remove the specified header from the request
+//  @param req
+//  @param header
+//
+func RemoveHeader(req *http.Request, header string) {
+	if req.Header.Get(header) != "" {
+		req.Header.Del(header)
+	} else {
+		logger.Errorln("no specified header which will be removed in request")
+	}
+}
+
+//
+// UpdateHeader
+//  @Description: update the specified header in the request
+//  @param req
+//  @param header
+//  @param value
+//
+func UpdateHeader(req *http.Request, header string, value string) {
+	if req.Header.Get(header) != "" {
+		req.Header.Set(header, value)
+	} else {
+		logger.Errorln("no specified header which will be updated in request")
+	}
 }

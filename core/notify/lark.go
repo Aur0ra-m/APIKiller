@@ -3,7 +3,7 @@ package notify
 import (
 	http2 "APIKiller/core/ahttp"
 	"APIKiller/core/data"
-	logger "APIKiller/log"
+	logger "APIKiller/logger"
 	"bytes"
 	"context"
 	"crypto/hmac"

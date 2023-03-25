@@ -2,7 +2,7 @@ package backend
 
 import (
 	"APIKiller/core/data"
-	logger "APIKiller/log"
+	logger "APIKiller/logger"
 	"context"
 	"encoding/base64"
 	"fmt"
@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/viper"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
@@ -37,6 +38,9 @@ func (s *APIServer) db() *gorm.DB {
 	//dsn := "user:pass@tcp(127.0.0.1:3306)/dbname?charset=utf8mb4&parseTime=True&loc=Local"
 	dsn := fmt.Sprintf("root:123456@tcp(192.168.52.153:3306)/apikiller?charset=utf8mb4&parseTime=True&loc=Local")
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+
+	// disable logging
+	db.Logger.LogMode(1)
 
 	if err != nil {
 		log.Errorln("Connect database error", err)
@@ -131,6 +135,9 @@ func Server() {
 
 func NewAPIServer(ctx context.Context) {
 	server := APIServer{}
+
+	// disable logging
+	gin.DefaultWriter = ioutil.Discard
 
 	ipaddr := viper.GetString("app.web.ipaddr")
 	port := viper.GetString("app.web.port")

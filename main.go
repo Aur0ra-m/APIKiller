@@ -19,7 +19,7 @@ import (
 	"APIKiller/core/origin"
 	"APIKiller/core/origin/fileInputOrigin"
 	"APIKiller/core/origin/realTimeOrigin"
-	logger "APIKiller/log"
+	logger "APIKiller/logger"
 	"APIKiller/web/backend"
 	"context"
 	"fmt"
@@ -31,7 +31,7 @@ import (
 )
 
 const (
-	VERSION = "0.0.4"
+	VERSION = "1.0.0"
 )
 
 func main() {
@@ -45,7 +45,7 @@ func main() {
 	ctx := context.TODO()
 
 	// load database\modules\filters\notifier and so on
-	ctx = loadConfig(ctx)
+	ctx = loadConfig(ctx, cmd.ConfigPath)
 	ctx = loadDatabase(ctx)
 	ctx = loadModules(ctx)
 	ctx = loadFilter(ctx)
@@ -178,9 +178,9 @@ func loadModules(ctx context.Context) context.Context {
 
 	modules = append(modules, authorizedDetector.NewAuthorizedDetector(ctx))
 	modules = append(modules, A40xBypasserModule.NewA40xBypassModule(ctx))
-	modules = append(modules, CSRFDetector.NewCsrfDetector(ctx))
+	modules = append(modules, CSRFDetector.NewCSRFDetector(ctx))
 	modules = append(modules, openRedirectDetector.NewOpenRedirectDetector(ctx))
-	modules = append(modules, DoSDetector.NewDosDetector(ctx))
+	modules = append(modules, DoSDetector.NewDoSDetector(ctx))
 
 	return context.WithValue(ctx, "modules", modules)
 }
@@ -196,10 +196,10 @@ func loadFilter(ctx context.Context) context.Context {
 	return context.WithValue(ctx, "filters", filters)
 }
 
-func loadConfig(ctx context.Context) context.Context {
+func loadConfig(ctx context.Context, configPath string) context.Context {
 	logger.Infoln("loading config")
 
-	viper.SetConfigFile("./config.yaml")
+	viper.SetConfigFile(configPath)
 
 	err := viper.ReadInConfig()
 	if err != nil {
@@ -212,7 +212,7 @@ func loadConfig(ctx context.Context) context.Context {
 func loadHooks(ctx context.Context) context.Context {
 	// except windows os
 	if runtime.GOOS == "windows" {
-		logger.Errorln("not support windows operation system")
+		logger.Infoln("not support windows operation system")
 		return ctx
 	}
 

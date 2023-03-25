@@ -4,10 +4,9 @@ import (
 	"APIKiller/core/ahttp"
 	"APIKiller/core/data"
 	"APIKiller/core/module"
-	logger "APIKiller/log"
+	logger "APIKiller/logger"
 	"context"
 	"github.com/spf13/viper"
-	"golang.org/x/exp/slices"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -25,27 +24,24 @@ func (d *OpenRedirectDetector) Detect(ctx context.Context, item *data.DataItem) 
 	srcResp := item.SourceResponse
 	srcReq := item.SourceRequest
 
-	// get raw query parameter list
-	for key, _ := range srcReq.URL.Query() {
-		if slices.Contains(d.rawQueryParams, key) {
-			// clone a new newReq
-			newReq := ahttp.RequestClone(srcReq)
-
-			// replace value of params in new newReq
-			newReq.URL.Query()[key] = []string{d.evilLink}
-
-			// do newReq
-			newResp := ahttp.DoRequest(newReq)
-
-			// judge
-			if d.judge(srcResp, newResp) {
-				item.VulnType = append(item.VulnType, "open-redirect")
-				item.VulnRequest = append(item.VulnRequest, newReq)
-				item.VulnResponse = append(item.VulnResponse, newResp)
-			}
-
-			return
+	for _, param := range d.rawQueryParams {
+		newReq := ahttp.ModifyQueryParam(srcReq, param, d.evilLink)
+		if newReq == nil {
+			logger.Debugln("parameter not found")
+			continue
 		}
+
+		// do newReq
+		newResp := ahttp.DoRequest(newReq)
+
+		// judge
+		if d.judge(srcResp, newResp) {
+			item.VulnType = append(item.VulnType, "open-redirect")
+			item.VulnRequest = append(item.VulnRequest, newReq)
+			item.VulnResponse = append(item.VulnResponse, newResp)
+		}
+
+		return
 	}
 }
 

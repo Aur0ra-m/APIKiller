@@ -6,10 +6,11 @@ import (
 	"APIKiller/core/module"
 	"APIKiller/core/notify"
 	"APIKiller/core/origin"
-	logger "APIKiller/log"
+	logger "APIKiller/logger"
 	"APIKiller/util"
 	"context"
 	"fmt"
+	"sync"
 	"time"
 )
 
@@ -34,19 +35,22 @@ func NewHandler(ctx context.Context, httpItem *origin.TransferItem) {
 
 	// enum all modules and detect
 	modules := ctx.Value("modules").([]module.Detecter)
-	for _, detector := range modules {
-		if detector == nil {
-			continue
-		}
+	var wg sync.WaitGroup
+	for i, _ := range modules {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
 
-		detector.Detect(ctx, item)
+			if modules[i] == nil {
+				return
+			}
+
+			modules[i].Detect(ctx, item)
+		}(i)
 	}
+	wg.Wait()
 
 	// notify
-	//if len(item.VulnType) != 0 {
-	//	notifier := ctx.Value("notifier").(notify.Notify)
-	//	notifier.notifyQueue() <- item
-	//}
 	notifier := ctx.Value("notifier")
 	if notifier != nil {
 		notifier := ctx.Value("notifier").(notify.Notify)

@@ -2,7 +2,7 @@ package fileInputOrigin
 
 import (
 	"APIKiller/core/origin"
-	logger "APIKiller/log"
+	logger "APIKiller/logger"
 	"encoding/base64"
 	"github.com/beevik/etree"
 )

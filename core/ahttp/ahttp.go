@@ -3,8 +3,7 @@ package ahttp
 import (
 	"APIKiller/core/ahttp/hook"
 	"APIKiller/core/aio"
-	logger "APIKiller/log"
-	"APIKiller/util"
+	logger "APIKiller/logger"
 	"bufio"
 	"crypto/tls"
 	"net/http"
@@ -74,7 +73,7 @@ func RegisterHooks(requestHook hook.RequestHook) {
 
 func RequestClone(src *http.Request) *http.Request {
 	// dump request
-	reqStr := util.DumpRequest(src)
+	reqStr := DumpRequest(src)
 	// http.ReadRequest
 	request, err := http.ReadRequest(bufio.NewReader(strings.NewReader(reqStr)))
 	if err != nil {
@@ -99,7 +98,7 @@ func RequestClone(src *http.Request) *http.Request {
 
 func ResponseClone(src *http.Response, req *http.Request) (dst *http.Response) {
 	// dump response
-	respStr := util.DumpResponse(src)
+	respStr := DumpResponse(src)
 
 	// http.ReadResponse
 	response, err := http.ReadResponse(bufio.NewReader(strings.NewReader(respStr)), req)
@@ -111,4 +110,15 @@ func ResponseClone(src *http.Response, req *http.Request) (dst *http.Response) {
 	response.Body = aio.TransformReadCloser(response.Body)
 
 	return response
+}
+
+//
+// ExistsParam
+//  @Description:
+//  @param req
+//  @param paramName
+//  @return bool
+//
+func ExistsParam(req *http.Request, paramName string) bool {
+	return false
 }

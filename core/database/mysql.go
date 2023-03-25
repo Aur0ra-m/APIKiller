@@ -1,9 +1,9 @@
 package database
 
 import (
+	"APIKiller/core/ahttp"
 	"APIKiller/core/data"
-	log "APIKiller/log"
-	"APIKiller/util"
+	log "APIKiller/logger"
 	"context"
 	"encoding/base64"
 	"fmt"
@@ -90,11 +90,11 @@ func (m *Mysql) AddInfo(item *data.DataItem) {
 		Url:            item.Url,
 		Https:          item.Https,
 		Method:         item.Method,
-		SourceRequest:  m.addHttpItem(util.DumpRequest(item.SourceRequest)),
-		SourceResponse: m.addHttpItem(util.DumpResponse(item.SourceResponse)),
+		SourceRequest:  m.addHttpItem(ahttp.DumpRequest(item.SourceRequest)),
+		SourceResponse: m.addHttpItem(ahttp.DumpResponse(item.SourceResponse)),
 		VulnType:       strings.Join(item.VulnType, " "),
-		VulnRequest:    m.addHttpItems(util.DumpRequests(item.VulnRequest)),
-		VulnResponse:   m.addHttpItems(util.DumpResponses(item.VulnResponse)),
+		VulnRequest:    m.addHttpItems(ahttp.DumpRequests(item.VulnRequest)),
+		VulnResponse:   m.addHttpItems(ahttp.DumpResponses(item.VulnResponse)),
 		ReportTime:     item.ReportTime,
 		CheckState:     item.CheckState,
 	}
@@ -181,14 +181,12 @@ func (m *Mysql) connect(host, port, dbname, username, password string) {
 //	@Description:
 //	@receiver m
 func (m *Mysql) init() {
-
+	// disable logging
+	m.db.Logger.LogMode(1)
 }
 
 func NewMysqlClient(ctx context.Context) *Mysql {
 	mysqlcli := &Mysql{}
-
-	// init mysql
-	mysqlcli.init()
 
 	//parse config
 	host := viper.GetString("app.db.mysql.host")
@@ -199,6 +197,9 @@ func NewMysqlClient(ctx context.Context) *Mysql {
 
 	//connect db and return DB object
 	mysqlcli.connect(host, port, dbname, username, password)
+
+	// init mysql
+	mysqlcli.init()
 
 	return mysqlcli
 }

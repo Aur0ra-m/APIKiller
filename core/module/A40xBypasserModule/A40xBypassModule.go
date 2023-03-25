@@ -4,7 +4,7 @@ import (
 	"APIKiller/core/ahttp"
 	"APIKiller/core/data"
 	"APIKiller/core/module"
-	logger "APIKiller/log"
+	logger "APIKiller/logger"
 	"context"
 	"fmt"
 	"github.com/spf13/viper"
@@ -18,6 +18,7 @@ import (
 )
 
 type A40xBypassModule struct {
+	typeFlag         string
 	records          []string
 	midPaddings      []string
 	endPaddings      []string
@@ -31,7 +32,7 @@ type A40xBypassModule struct {
 	mu sync.Mutex
 }
 
-func (a *A40xBypassModule) Detect(ctx context.Context, item *data.DataItem) {
+func (d *A40xBypassModule) Detect(ctx context.Context, item *data.DataItem) {
 	logger.Debugln("[Detect] 40x bypass")
 	srcReq := item.SourceRequest
 	srcResp := item.SourceResponse
@@ -40,7 +41,7 @@ func (a *A40xBypassModule) Detect(ctx context.Context, item *data.DataItem) {
 	t := 0
 	var v interface{}
 
-	if !slices.Contains(a.codeFlags, srcResp.StatusCode) {
+	if !slices.Contains(d.codeFlags, srcResp.StatusCode) {
 
 		return
 	}
@@ -48,7 +49,7 @@ func (a *A40xBypassModule) Detect(ctx context.Context, item *data.DataItem) {
 		allbytes, _ := ioutil.ReadAll(srcResp.Body)
 		body := string(allbytes)
 
-		for _, keyword := range a.bodyFlags {
+		for _, keyword := range d.bodyFlags {
 			if strings.Contains(body, keyword) {
 				t = 2
 				v = keyword
@@ -68,30 +69,30 @@ func (a *A40xBypassModule) Detect(ctx context.Context, item *data.DataItem) {
 		vulnResponse *http.Response
 	)
 
-	// add ip headers and assign a value of 127.0.0.1 for each header
-	a.appendIpHeaders(request)
+	// add ip headers and assign d value of 127.0.0.1 for each header
+	d.appendIpHeaders(request)
 
 	// architecture layer detect
-	a.mu.Lock()
+	d.mu.Lock()
 
-	if slices.Contains(a.records, srcReq.Host) == false {
+	if slices.Contains(d.records, srcReq.Host) == false {
 		// record
-		a.records = append(a.records, srcReq.Host)
+		d.records = append(d.records, srcReq.Host)
 
 		// path bypass
 		if vulnRequest == nil {
-			vulnRequest, vulnResponse = a.pathBypass(ctx, request, srcResp, t, v)
+			vulnRequest, vulnResponse = d.pathBypass(ctx, request, srcResp, t, v)
 		}
 
 		// protocol version
 	}
 
-	a.mu.Unlock()
+	d.mu.Unlock()
 
 	// api layer
 	if vulnRequest == nil {
 		// api version bypass
-		vulnRequest, vulnResponse = a.apiVersionBypass(ctx, request, srcResp, t, v)
+		vulnRequest, vulnResponse = d.apiVersionBypass(ctx, request, srcResp, t, v)
 	}
 
 	// save result
@@ -114,33 +115,33 @@ func (a *A40xBypassModule) Detect(ctx context.Context, item *data.DataItem) {
 //  @return *http.Request
 //  @return *http.Response
 //
-func (a *A40xBypassModule) pathBypass(ctx context.Context, srcRequest *http.Request, srcResponse *http.Response, t int, v interface{}) (*http.Request, *http.Response) {
+func (d *A40xBypassModule) pathBypass(ctx context.Context, srcRequest *http.Request, srcResponse *http.Response, t int, v interface{}) (*http.Request, *http.Response) {
 	var requestClone *http.Request
 
 	// /admin/get --> /admin/Get
 	requestClone = ahttp.RequestClone(srcRequest)
 	ahttp.ModifyURLPathCase(requestClone.URL)
 	response := ahttp.DoRequest(requestClone)
-	if a.judge(ctx, t, v, srcResponse, response) {
+	if d.judge(ctx, t, v, srcResponse, response) {
 		return requestClone, response
 	}
 
 	// /admin/get --> /admin/./get
-	for _, midPadding := range a.midPaddings {
+	for _, midPadding := range d.midPaddings {
 		requestClone = ahttp.RequestClone(srcRequest)
 		ahttp.ModifyURLPathMidPad(requestClone.URL, midPadding)
 		response := ahttp.DoRequest(requestClone)
-		if a.judge(ctx, t, v, srcResponse, response) {
+		if d.judge(ctx, t, v, srcResponse, response) {
 			return requestClone, response
 		}
 	}
 
 	// /admin/get --> /admin/get;.css
-	for _, endPadding := range a.endPaddings {
+	for _, endPadding := range d.endPaddings {
 		requestClone = ahttp.RequestClone(srcRequest)
 		ahttp.ModifyURLPathEndPad(requestClone.URL, endPadding)
 		response := ahttp.DoRequest(requestClone)
-		if a.judge(ctx, t, v, srcResponse, response) {
+		if d.judge(ctx, t, v, srcResponse, response) {
 			return requestClone, response
 		}
 	}
@@ -153,10 +154,10 @@ func (a *A40xBypassModule) pathBypass(ctx context.Context, srcRequest *http.Requ
 //	@Description:  append all possible headers to request
 //	@receiver a
 //	@param req
-func (a *A40xBypassModule) appendIpHeaders(req *http.Request) {
+func (d *A40xBypassModule) appendIpHeaders(req *http.Request) {
 	// assemble request
-	for _, header := range a.ipHeaders {
-		req.Header.Add(header, a.ip)
+	for _, header := range d.ipHeaders {
+		ahttp.AppendHeader(req, header, d.ip)
 	}
 }
 
@@ -172,21 +173,21 @@ func (a *A40xBypassModule) appendIpHeaders(req *http.Request) {
 //  @return *http.Request
 //  @return *http.Response
 //
-func (a *A40xBypassModule) apiVersionBypass(ctx context.Context, srcRequest *http.Request, srcResponse *http.Response, t int, v interface{}) (*http.Request, *http.Response) {
+func (d *A40xBypassModule) apiVersionBypass(ctx context.Context, srcRequest *http.Request, srcResponse *http.Response, t int, v interface{}) (*http.Request, *http.Response) {
 
-	compiler, _ := regexp.Compile("/" + a.apiVersionFormat + "/")
+	compiler, _ := regexp.Compile("/" + d.apiVersionFormat + "/")
 	foundString := compiler.FindString(srcRequest.URL.Path)
 
 	if foundString != "" {
 		// get api version
 		trimedString := strings.Trim(foundString, "/")
-		version, _ := strconv.Atoi(strings.Trim(trimedString, a.apiVersionPrefix))
+		version, _ := strconv.Atoi(strings.Trim(trimedString, d.apiVersionPrefix))
 
 		for i := 1; i < version; i++ {
 			requestClone := ahttp.RequestClone(srcRequest)
-			ahttp.ModifyURLPathAPIVerion(requestClone.URL, foundString, fmt.Sprintf("/%s%d/", a.apiVersionPrefix, i))
+			ahttp.ModifyURLPathAPIVerion(requestClone.URL, foundString, fmt.Sprintf("/%s%d/", d.apiVersionPrefix, i))
 			response := ahttp.DoRequest(requestClone)
-			if a.judge(ctx, t, v, srcResponse, response) {
+			if d.judge(ctx, t, v, srcResponse, response) {
 				return requestClone, response
 			}
 		}
@@ -207,7 +208,7 @@ func (a *A40xBypassModule) apiVersionBypass(ctx context.Context, srcRequest *htt
 //  @param newResp
 //  @return bool
 //
-func (a *A40xBypassModule) judge(ctx context.Context, t int, value interface{}, srcResp, newResp *http.Response) bool {
+func (d *A40xBypassModule) judge(ctx context.Context, t int, value interface{}, srcResp, newResp *http.Response) bool {
 	if t == 1 {
 		//
 	} else if t == 2 {
@@ -236,6 +237,7 @@ func NewA40xBypassModule(ctx context.Context) module.Detecter {
 	logger.Infoln("[Load Module] 40x bypass module")
 
 	return &A40xBypassModule{
+		typeFlag:         viper.GetString("app.module.40xBypassModule.typeFlag"),
 		records:          nil,
 		midPaddings:      viper.GetStringSlice("app.module.40xBypassModule.pathFuzz.midPadding"),
 		endPaddings:      viper.GetStringSlice("app.module.40xBypassModule.pathFuzz.endPadding"),

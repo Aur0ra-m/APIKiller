@@ -12,7 +12,7 @@ app: # 系统全局配置文件
       port: '8080' # 监听端口
   module: # 核心模块配置
     authorizedDetector: # 未授权&越权检测模块配置
-      option: 0 # 模块开关
+      option: 1 # 模块开关
       authHeader: Authorization-Token # 探测系统使用的鉴权头，例如cookie、X-Signature或自定义鉴权头
       roles: # 不同权限的鉴权头value（目前只处理第一个角色）
         - Z3Vlc3QxOjEyMzEyMw==
@@ -24,7 +24,7 @@ app: # 系统全局配置文件
           - forbidden
           - error
     40xBypassModule: # 40x bypass探测模块
-      option: 0 # 模块开关
+      option: 1 # 模块开关
       authFailedFlag: # 鉴权失败标志配置
         statusCode: # 鉴权失败响应头
           - 403
@@ -113,7 +113,7 @@ app: # 系统全局配置文件
           - "%0a"
           - "#"
     csrfDetector: # csrf检测模块
-      option: 0 # 模块开关
+      option: 1 # 模块开关
       csrfTokenPattern: csrf # token对应的参数名或者请求头
       csrfInvalidPattern: # csrf鉴权失败返回的标识
         - invalid
@@ -170,6 +170,8 @@ app: # 系统全局配置文件
       secret: ''
     Dingding: # 钉钉
       webhookUrl: ''
+  other: # 其他配置
+    reverseTarget: 127.0.0.1 # 反连平台目标
   web: # web运营平台配置
     ipaddr: 127.0.0.1
     port: '80'

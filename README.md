@@ -1,14 +1,14 @@
 <h2 align="center"><img align="center" alt="logo.png" height="200px" src="static/img/img_logo.png" width="auto" /><br/><br/>
 APIKiller-企业API安全保护神</h2>
 <p align="center">
-  <a href="#项目简介">简介</a> •
-  <a href="#项目架构">架构</a> •
-  <a href="#Feature">Feature</a> •
-  <a href="#食用宝典">食用宝典</a> •
-  <a href="#二次开发文档">二次开发文档</a> •
-  <a href="#更新记录">更新</a> •
-  <a href="#项目社区">项目社区</a> •
-  <a href="#致谢">致谢</a>
+  <d href="#项目简介">简介</d> •
+  <d href="#项目架构">架构</d> •
+  <d href="#Feature">Feature</d> •
+  <d href="#食用宝典">食用宝典</d> •
+  <d href="#二次开发文档">二次开发文档</d> •
+  <d href="#更新记录">更新</d> •
+  <d href="#项目社区">项目社区</d> •
+  <d href="#致谢">致谢</d>
 </p><br/>
 
 
@@ -30,7 +30,7 @@ APIKiller-企业API安全保护神</h2>
   - 支持流量监听
   - 支持历史流量回扫\[目前只支持burpsuite存储流量\]
 - 支持测试流量区分、流量清洗
-  - 允许通过hook，对所有测试请求进行添加标识header等方式，区分测试流量或者将测试流量导入到pre、boe等非生成环境中
+  - 允许通过hook，对所有测试请求进行添加标识header等方式，区分测试流量或者将测试流量导入到pre、boe等非生产环境中
 - 多功能扫描模块
   - 越权检测模块，高效精准，支持多情景检测
   - 40x bypass 模块
@@ -168,12 +168,12 @@ APIKiller-企业API安全保护神</h2>
     type AddHeaderHook struct {
     }
     
-    func (a AddHeaderHook) HookBefore(request *http.Request) {
+    func (d AddHeaderHook) HookBefore(request *http.Request) {
         fmt.Println("HOOK Before: hhhhhhh")
         // ....
     }
     
-    func (a AddHeaderHook) HookAfter(request *http.Request) {
+    func (d AddHeaderHook) HookAfter(request *http.Request) {
     
     }
     
@@ -222,13 +222,16 @@ https://github.com/Aur0ra-m/APIKiller/wiki
 - 【bugFix】调整全局的chance-recovery 机制为clone机制
   
 ### v0.0.4
-- 【功能】添加HTTP HOOK功能，可满足区分测试产生的http脏数据、流量清洗功能。<a href="#http-hook机制">HOOK食用方式</a>
+- 【功能】添加HTTP HOOK功能，可满足区分测试产生的http脏数据、流量清洗功能。<d href="#http-hook机制">HOOK食用方式</d>
 - 【功能】新增开放重定向检测模块，支持对常见的GET Query方式进行测试
 - 【功能】新增DoS安全测试模块，目前可以对查询资源大小未控制导致的DoS进行检测，例如size设置为超大数
 - 【优化】针对之前试用时产生的各种不适进行了一个优化
 
-### v0.0.5
-- 【!】项目wiki以及二次开发文档第一版发布
+### v1.0.0
+- 【发布】项目wiki以及二次开发文档第一版发布
+- 【发布】发布项目Release 1.0.0
+- 【优化】多处增添多线程操作，再次优化整体性能
+- 【功能】增添可指定配置文件操作
 
 ## 项目社区
 如想对项目进行深入了解，或加入研发团队欢迎加入APIKiller项目社区。<br>

@@ -6,8 +6,11 @@ import (
 )
 
 func test() {
-	r := regexp.MustCompile(`"` + `key` + `"\s*?:\s*?"?(.*?)?"?,?\s`)
-	strings := r.FindStringSubmatch("{\n    \"key\":\"1\"\n}")
+	r := regexp.MustCompile("name=\"" + "description" + "\".*?" + "\n\n" + `(.*)`)
+
+	s := "---------------------------974767299852498929531610575\nContent-Disposition: form-data; name=\"description\"\n\nsome text"
+
+	strings := r.FindStringSubmatch(s)
 	fmt.Println(strings)
 	fmt.Println(r.SubexpNames())
 }
