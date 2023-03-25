@@ -42,6 +42,13 @@ func New(options *types.Options, cfg *config.Config) (*Runner, error) {
 		go backend.NewAPIServer(&cfg.Web)
 	}
 
+	// create a httpItem channel
+	go func() {
+		if options.ConfigFile != "" {
+
+		}
+	}()
+
 	runner := &Runner{
 		options:   options,
 		config:    cfg,

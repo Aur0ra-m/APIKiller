@@ -4,6 +4,8 @@ go 1.18
 
 require (
 	github.com/antlabs/strsim v0.0.3
+	github.com/beevik/etree v1.1.0
+	github.com/elazarl/goproxy v0.0.0-20221015165544-a0805db90819
 	github.com/gin-gonic/gin v1.8.2
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/viper v1.15.0
