@@ -9,8 +9,8 @@ require (
 	github.com/gin-gonic/gin v1.8.2
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/viper v1.15.0
-	golang.org/x/exp v0.0.0-20230223210539-50820d90acfd
-	golang.org/x/net v0.5.0
+	golang.org/x/exp v0.0.0-20230314191032-db074128a8ec
+	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 	gorm.io/driver/mysql v1.4.5
 	gorm.io/gorm v1.24.3
 )
@@ -41,6 +41,7 @@ require (
 	github.com/subosito/gotenv v1.4.2 // indirect
 	github.com/ugorji/go/codec v1.2.8 // indirect
 	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e // indirect
+	golang.org/x/net v0.5.0 // indirect
 	golang.org/x/sys v0.4.0 // indirect
 	golang.org/x/text v0.6.0 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
