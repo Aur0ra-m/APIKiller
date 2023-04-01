@@ -55,22 +55,29 @@ APIKiller-企业API安全保护神</h2>
 ## 食用宝典
 > 详细请查看：https://github.com/Aur0ra-m/APIKiller/wiki
 1. 安装好数据库环境（我个人采用的是docker）
-   1. docker pull 数据库镜像
-   ```shell
-    sudo docker run --name mysql-server -e MYSQL_ROOT_PASSWORD=123456 -p 3306:3306  mysql:5.7
-   ```
-   2. 导入apikiller.sql文件
-   ```shell
-    sudo docker cp /tmp/apikiller.sql bteye-mysql:/tmp/apikiller.sql
-   ```
-   3. 登入mysql
-   ```shell
-    docker exec -it mysql-server mysql -uroot -p123456
-    source /tmp/apikiller.sql
-   ```
-   4. 【重点】在 config.yaml 中进行相关配置
+   1. **一键部署**
+      1. 将项目clone到服务器后，直接运行 ```sudo bash dbDeploy.sh```
+      
+         ![img.png](static/img/img-0401.png)
+      2. 根据返回的数据，在config.yaml中完成相关配置
+         <img src="static/img/img_6.png" alt="img_6.png" width="80%;" />
+   2. **手动部署**
+      1. docker pull 数据库镜像
+      ```shell
+       sudo docker run --name mysql-server -e MYSQL_ROOT_PASSWORD=123456 -p 3306:3306  mysql:5.7
+      ```
+      2. 导入apikiller.sql文件
+      ```shell
+       sudo docker cp /tmp/apikiller.sql bteye-mysql:/tmp/apikiller.sql
+      ```
+      3. 登入mysql
+      ```shell
+       docker exec -it mysql-server mysql -uroot -p123456
+       source /tmp/apikiller.sql
+      ```
+      4. 【重点】在 config.yaml 中进行相关配置
    
-        <img src="static/img/img_6.png" alt="img_6.png" width="80%;" />
+           <img src="static/img/img_6.png" alt="img_6.png" width="80%;" />
 
 2. 安装根目录下的https证书[windows环境]
    1. 找到根目录下的ca.crt证书
@@ -232,6 +239,8 @@ https://github.com/Aur0ra-m/APIKiller/wiki
 - 【发布】发布项目Release 1.0.0
 - 【优化】多处增添多线程操作，再次优化整体性能
 - 【功能】增添可指定配置文件操作
+- 【优化】 提供数据库一键部署方案
+
 
 ## 项目社区
 如想对项目进行深入了解，或加入研发团队欢迎加入APIKiller项目社区。<br>

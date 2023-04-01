@@ -2,15 +2,32 @@ package main
 
 import (
 	"fmt"
-	"regexp"
+	"sync"
 )
 
 func test() {
-	r := regexp.MustCompile("name=\"" + "description" + "\".*?" + "\n\n" + `(.*)`)
+	wg := sync.WaitGroup{}
 
-	s := "---------------------------974767299852498929531610575\nContent-Disposition: form-data; name=\"description\"\n\nsome text"
+	for i := 0; i < 5; i++ {
+		wg.Add(1)
+		go func() {
 
-	strings := r.FindStringSubmatch(s)
-	fmt.Println(strings)
-	fmt.Println(r.SubexpNames())
+			defer wg.Done()
+
+			Print(i)
+			//fmt.Println(modules[i])
+			//
+			//if modules[i] == nil {
+			//	return
+			//}
+			//
+			//modules[i].Detect(ctx, item)
+		}()
+	}
+
+	wg.Wait()
+}
+
+func Print(i int) {
+	fmt.Println(i)
 }
