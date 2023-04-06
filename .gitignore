@@ -9,3 +9,5 @@ gen
 
 test.go
 test_test.go
+/APIKiller.exe
+/ApiKiller.log

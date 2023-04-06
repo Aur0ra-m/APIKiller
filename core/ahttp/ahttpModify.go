@@ -228,7 +228,7 @@ func ModifyPostParam(req *http.Request, paramName string, newValue string) *http
 			modifyPostXMLParam(newReq, paramName, newValue)
 		}
 	} else if strings.Contains(ct, "multipart/form-data") {
-		if strings.Contains(bodyStr, "name=\""+paramName) {
+		if strings.Contains(bodyStr, ";name=\""+paramName) {
 			newReq = RequestClone(req)
 
 			modifyPostMultiDataParam(newReq, paramName, newValue)
@@ -338,7 +338,7 @@ func modifyPostBody(req *http.Request, paramItemRegExp string, paramKVSeparator 
 	req.Body = aio.TransformReadCloser(bytes.NewReader([]byte(newBody)))
 
 	// update Content-Length
-	req.ContentLength = int64(int(len(newBody)))
+	req.ContentLength = int64(len(newBody))
 }
 
 //

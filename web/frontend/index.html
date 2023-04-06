@@ -183,6 +183,10 @@
             type: "switch",
             name: "CheckState",
           },
+          {
+            type:"text",
+            name:"ReportTime"
+          }
         ],
       };
     },
@@ -238,6 +242,8 @@
                 .replace(/日/g, " ");
       },
       getAllList() {
+        var vueSelf = this
+
         //获取列表的全部信息
         console.log("GetAllList function");
 
@@ -252,6 +258,7 @@
                   this.items = data;
                 })
                 .catch(() => {
+
                   this.items = new Array(1).fill(0).map(() => ({
                     Id: "123",
                     Domain: "test",
@@ -263,7 +270,7 @@
                     VulnType: "test",
                     VulnRequest: "test",
                     VulnResponse: "test",
-                    ReportTime: Date.now(),
+                    ReportTime: vueSelf.getFormattedTime(1649287305),
                     CheckState: false,
                   }));
                 })

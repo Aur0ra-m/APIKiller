@@ -6,9 +6,20 @@ import (
 	logger "APIKiller/logger"
 	"bufio"
 	"crypto/tls"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
+)
+
+type requestCacheBlock struct {
+	key   string //method-domain-url
+	value string
+}
+
+var (
+	cache       = make([]*requestCacheBlock, 128)
+	updatePoint = 0
 )
 
 // DoRequest
@@ -19,7 +30,7 @@ import (
 func DoRequest(r *http.Request) *http.Response {
 	var Client http.Client
 
-	//fmt.Println(r.URL.String())
+	logger.Debugln("Do request: ", r.URL)
 
 	// https request
 	if r.URL.Scheme == "https" {
@@ -67,9 +78,32 @@ func DoRequest(r *http.Request) *http.Response {
 	return response
 }
 
+//
+// RequestClone
+//  @Description: clone request with source request
+//  @param src
+//  @return *http.Request
+//
 func RequestClone(src *http.Request) *http.Request {
 	// dump request
-	reqStr := DumpRequest(src)
+	reqStr := ""
+	for _, c := range cache {
+		if c != nil && c.key == src.URL.String() {
+			reqStr = c.value
+			break
+		}
+	}
+	if reqStr == "" {
+		reqStr = DumpRequest(src)
+
+		if cache[updatePoint] == nil {
+			cache[updatePoint] = &requestCacheBlock{}
+		}
+		cache[updatePoint].key = src.URL.String()
+		cache[updatePoint].value = reqStr
+		updatePoint = (updatePoint + 1) % 128
+	}
+
 	// http.ReadRequest
 	request, err := http.ReadRequest(bufio.NewReader(strings.NewReader(reqStr)))
 	if err != nil {
@@ -87,12 +121,17 @@ func RequestClone(src *http.Request) *http.Request {
 	// transform body
 	if request.Body != nil {
 		request.Body = aio.TransformReadCloser(request.Body)
+
+		// update content-length
+		all, _ := ioutil.ReadAll(request.Body)
+		request.ContentLength = int64(len(all))
 	}
 
 	return request
 }
 
 func ResponseClone(src *http.Response, req *http.Request) (dst *http.Response) {
+
 	// dump response
 	respStr := DumpResponse(src)
 
@@ -104,7 +143,6 @@ func ResponseClone(src *http.Response, req *http.Request) (dst *http.Response) {
 
 	// transform body
 	response.Body = aio.TransformReadCloser(response.Body)
-
 	return response
 }
 
