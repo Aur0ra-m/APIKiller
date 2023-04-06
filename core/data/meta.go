@@ -13,9 +13,9 @@ type DataItem struct {
 	Https          bool //http/https flag
 	SourceRequest  *http.Request
 	SourceResponse *http.Response
-	VulnType       []string
-	VulnRequest    []*http.Request
-	VulnResponse   []*http.Response
+	VulnType       string
+	VulnRequest    *http.Request
+	VulnResponse   *http.Response
 	ReportTime     string
 	CheckState     bool
 }

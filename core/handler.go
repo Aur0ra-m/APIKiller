@@ -6,60 +6,49 @@ import (
 	"APIKiller/core/module"
 	"APIKiller/core/notify"
 	"APIKiller/core/origin"
-	logger "APIKiller/logger"
-	"APIKiller/util"
-	"context"
+	"APIKiller/logger"
 	"fmt"
-	"sync"
-	"time"
+	"strings"
 )
 
-func NewHandler(ctx context.Context, httpItem *origin.TransferItem) {
+var notifier notify.Notify
+
+func NewHandler(httpItem *origin.TransferItem) {
 	r := httpItem.Req
 
 	// assembly DataItem
 	item := &data.DataItem{
-		Id:             util.GenerateRandomId(),
+		Id:             "",
 		Domain:         r.Host,
 		Url:            r.URL.Path,
 		Https:          r.URL.Scheme == "https",
 		Method:         r.Method,
 		SourceRequest:  r,
 		SourceResponse: httpItem.Resp,
-		VulnType:       []string{},
+		VulnType:       "",
 		VulnRequest:    nil,
 		VulnResponse:   nil,
-		ReportTime:     fmt.Sprintf("%v", time.Now().Unix()),
+		ReportTime:     "",
 		CheckState:     false,
 	}
 
 	// enum all modules and detect
-	modules := ctx.Value("modules").([]module.Detecter)
-	var wg sync.WaitGroup
+	modules := module.Modules
 	for i, _ := range modules {
-		wg.Add(1)
-		go func(i int) {
-			defer wg.Done()
+		go func(x int) {
+			resultDataItem := modules[x].Detect(item)
 
-			if modules[i] == nil {
-				return
+			// exist vulnerable
+			if resultDataItem != nil {
+				if strings.Index(resultDataItem.VulnType, module.AsyncDetectVulnTypeSeperator) <= 0 {
+					logger.Infoln(fmt.Sprintf("[Found Vulnerability] %s%s-->%s", resultDataItem.Domain, resultDataItem.Url, resultDataItem.VulnType))
+					// create notification
+					notify.CreateNotification(resultDataItem)
+				}
+				// save result
+				database.CreateSaveTask(resultDataItem)
 			}
-
-			modules[i].Detect(ctx, item)
 		}(i)
 	}
-	wg.Wait()
-
-	// notify
-	notifier := ctx.Value("notifier")
-	if notifier != nil {
-		notifier := ctx.Value("notifier").(notify.Notify)
-		notifier.NotifyQueue() <- item
-	}
-
-	// print result and save result
-	logger.Infoln(fmt.Sprintf("%v %v checkout: %v", item.Domain, item.Url, item.VulnType))
-	db := ctx.Value("db").(database.Database)
-	db.ItemAddQueue() <- item
 
 }

@@ -3,29 +3,18 @@ package notify
 import (
 	http2 "APIKiller/core/ahttp"
 	"APIKiller/core/data"
-	logger "APIKiller/logger"
 	"bytes"
-	"context"
 	"fmt"
 	"github.com/spf13/viper"
 	"net/http"
 )
 
 type Dingding struct {
-	webhookUrl  string
-	notifyQueue chan *data.DataItem
-}
-
-func (d *Dingding) NotifyQueue() chan *data.DataItem {
-	return d.notifyQueue
-}
-
-func (d *Dingding) SetNotifyQueue(NotifyQueue chan *data.DataItem) {
-	d.notifyQueue = NotifyQueue
+	webhookUrl string
 }
 
 func (d *Dingding) Notify(item *data.DataItem) {
-	logger.Infoln("notify dingding robot")
+	//logger.Infoln("notify dingding robot")
 
 	var jsonData []byte
 
@@ -50,7 +39,7 @@ func (d *Dingding) Notify(item *data.DataItem) {
 	defer response.Body.Close()
 }
 
-func NewDingdingNotifer(ctx context.Context) *Dingding {
+func NewDingdingNotifer() *Dingding {
 	// get config
 	webhookUrl := viper.GetString("app.notifier.Dingding.webhookUrl")
 	// create

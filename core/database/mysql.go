@@ -3,8 +3,8 @@ package database
 import (
 	"APIKiller/core/ahttp"
 	"APIKiller/core/data"
+	"APIKiller/core/module"
 	log "APIKiller/logger"
-	"context"
 	"encoding/base64"
 	"fmt"
 	"github.com/spf13/viper"
@@ -15,24 +15,19 @@ import (
 )
 
 type Mysql struct {
-	db           *gorm.DB
-	MaxCount     int //the max num of per-query
-	itemAddQueue chan *data.DataItem
+	db       *gorm.DB
+	MaxCount int //the max num of per-query
 }
 
-func (m *Mysql) ItemAddQueue() chan *data.DataItem {
-	return m.itemAddQueue
-}
-
-func (m *Mysql) SetItemAddQueue(itemAddQueue chan *data.DataItem) {
-	m.itemAddQueue = itemAddQueue
+func (m *Mysql) UpdateVulnType(token string) {
+	m.db.Model(&data.DataItemStr{}).Where("vuln_type = ?", token).Update("vuln_type", strings.Split(token, module.AsyncDetectVulnTypeSeperator)[0])
 }
 
 // ListAllInfo fetch all results and return
 func (m *Mysql) ListAllInfo() []data.DataItemStr {
 	items := make([]data.DataItemStr, m.MaxCount) //需要动态设置，能先查有多少条记录，再创建？
 
-	m.db.Find(&items)
+	m.db.Where("vuln_type not like ?", "%"+module.AsyncDetectVulnTypeSeperator+"%").Order("domain").Order("url").Find(&items)
 
 	// recover http item string from id
 	for i, item := range items {
@@ -43,26 +38,10 @@ func (m *Mysql) ListAllInfo() []data.DataItemStr {
 		items[i].SourceResponse = m.getHttpItembyId(item.SourceResponse)
 
 		//item.VulnRequest
-		ids := strings.Split(item.VulnRequest, ",")
-		if len(ids) != 0 {
-			result := ""
-			for _, id := range ids {
-				result += "**************************************************\n"
-				result += m.getHttpItembyId(id)
-			}
-			items[i].VulnRequest = result
-		}
+		items[i].VulnRequest = m.getHttpItembyId(item.VulnRequest)
 
 		//item.VulnResponse
-		ids2 := strings.Split(item.VulnResponse, ",")
-		if len(ids2) != 0 {
-			result := ""
-			for _, id := range ids2 {
-				result += "**************************************************\n"
-				result += m.getHttpItembyId(id)
-			}
-			items[i].VulnResponse = result
-		}
+		items[i].VulnResponse = m.getHttpItembyId(item.VulnResponse)
 	}
 
 	return items
@@ -92,9 +71,9 @@ func (m *Mysql) AddInfo(item *data.DataItem) {
 		Method:         item.Method,
 		SourceRequest:  m.addHttpItem(ahttp.DumpRequest(item.SourceRequest)),
 		SourceResponse: m.addHttpItem(ahttp.DumpResponse(item.SourceResponse)),
-		VulnType:       strings.Join(item.VulnType, " "),
-		VulnRequest:    m.addHttpItems(ahttp.DumpRequests(item.VulnRequest)),
-		VulnResponse:   m.addHttpItems(ahttp.DumpResponses(item.VulnResponse)),
+		VulnType:       item.VulnType,
+		VulnRequest:    m.addHttpItem(ahttp.DumpRequest(item.VulnRequest)),
+		VulnResponse:   m.addHttpItem(ahttp.DumpResponse(item.VulnResponse)),
 		ReportTime:     item.ReportTime,
 		CheckState:     item.CheckState,
 	}
@@ -185,7 +164,7 @@ func (m *Mysql) init() {
 	m.db.Logger.LogMode(1)
 }
 
-func NewMysqlClient(ctx context.Context) *Mysql {
+func NewMysqlClient() *Mysql {
 	mysqlcli := &Mysql{}
 
 	//parse config

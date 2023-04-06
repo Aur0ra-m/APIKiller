@@ -2,9 +2,24 @@ package module
 
 import (
 	"APIKiller/core/data"
-	"context"
+)
+
+const (
+	AsyncDetectVulnTypeSeperator = "^"
+)
+
+var (
+	Modules []Detecter
 )
 
 type Detecter interface {
-	Detect(ctx context.Context, item *data.DataItem)
+	Detect(item *data.DataItem) (result *data.DataItem)
+}
+
+func RegisterModule(d Detecter) {
+	if d == nil {
+		return
+	}
+
+	Modules = append(Modules, d)
 }

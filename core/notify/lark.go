@@ -5,7 +5,6 @@ import (
 	"APIKiller/core/data"
 	logger "APIKiller/logger"
 	"bytes"
-	"context"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
@@ -16,19 +15,10 @@ import (
 )
 
 type Lark struct {
-	webhookUrl  string
-	secret      string
-	signature   string
-	timestamp   int64
-	notifyQueue chan *data.DataItem
-}
-
-func (l *Lark) NotifyQueue() chan *data.DataItem {
-	return l.notifyQueue
-}
-
-func (l *Lark) SetNotifyQueue(NotifyQueue chan *data.DataItem) {
-	l.notifyQueue = NotifyQueue
+	webhookUrl string
+	secret     string
+	signature  string
+	timestamp  int64
 }
 
 func (l *Lark) genSign() {
@@ -63,7 +53,7 @@ func (l *Lark) init() {
 //	@param webhook lark webhook url
 //	@param signature lark webhook authorize parameter(optional)
 //	@return *Lark
-func NewLarkNotifier(ctx context.Context) *Lark {
+func NewLarkNotifier() *Lark {
 	// get config
 	webhookUrl := viper.GetString("app.notifier.Lark.webhookUrl")
 	secret := viper.GetString("app.notifier.Lark.secret")
@@ -80,17 +70,13 @@ func NewLarkNotifier(ctx context.Context) *Lark {
 	return lark
 }
 
-func (l *Lark) GetQueue() chan *data.DataItem {
-	return l.notifyQueue
-}
-
 func (l *Lark) Notify(item *data.DataItem) {
-	logger.Infoln("notify lark robot")
+	//logger.Infoln("notify lark robot")
 
 	var jsonData []byte
 
 	// Message format setting
-	MessageFormat := fmt.Sprintf("%s-%s exists %s", item.Domain, item.Url, item.VulnType)
+	MessageFormat := fmt.Sprintf("Domain:%s-Url:%s --> %s", item.Domain, item.Url, item.VulnType)
 
 	if l.secret != "" {
 		jsonData = []byte(fmt.Sprintf(`

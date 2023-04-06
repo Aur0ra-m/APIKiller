@@ -181,7 +181,7 @@ func ModifyQueryParam(req *http.Request, paramName string, newValue string) *htt
 		// clone a new newReq
 		newReq := RequestClone(req)
 
-		req.URL.RawQuery = strings.Replace(newReq.URL.RawQuery, paramName+"="+newReq.URL.Query()[paramName][0], paramName+"="+newValue, 1)
+		newReq.URL.RawQuery = strings.Replace(newReq.URL.RawQuery, paramName+"="+newReq.URL.Query()[paramName][0], paramName+"="+newValue, 1)
 		return newReq
 	}
 
@@ -216,19 +216,19 @@ func ModifyPostParam(req *http.Request, paramName string, newValue string) *http
 			modifyPostFormParam(newReq, paramName, newValue)
 		}
 	} else if ct == "application/json" {
-		if strings.Contains(bodyStr, paramName+"=") {
+		if strings.Contains(bodyStr, "\""+paramName+"\"") {
 			newReq = RequestClone(req)
 
 			modifyPostJsonParam(newReq, paramName, newValue)
 		}
 	} else if ct == "application/xml" {
-		if strings.Contains(bodyStr, paramName+"=") {
+		if strings.Contains(bodyStr, paramName+">") {
 			newReq = RequestClone(req)
 
 			modifyPostXMLParam(newReq, paramName, newValue)
 		}
 	} else if strings.Contains(ct, "multipart/form-data") {
-		if strings.Contains(bodyStr, paramName+"=") {
+		if strings.Contains(bodyStr, "name=\""+paramName) {
 			newReq = RequestClone(req)
 
 			modifyPostMultiDataParam(newReq, paramName, newValue)
@@ -262,11 +262,12 @@ func modifyPostXMLParam(req *http.Request, paramName string, newValue string) {
 //  @param newValue
 //
 func modifyPostJsonParam(req *http.Request, paramName string, newValue string) {
-	paramItemRegExp := `"` + paramName + `"\s*?:\s*?"?(.*?)?"?,?\s`
+	paramItemRegExp := `"` + paramName + `"\s*?:\s*"?(.*?)"?[\s,\}]`
 
 	modifyPostBody(req, paramItemRegExp, ":", newValue)
 }
 
+//{"size": "10000"
 //
 // modifyPostFormParam
 //  @Description: modify simple post form data with newValue
@@ -275,7 +276,7 @@ func modifyPostJsonParam(req *http.Request, paramName string, newValue string) {
 //  @param newValue
 //
 func modifyPostFormParam(req *http.Request, paramName string, newValue string) {
-	paramItemRegExp := paramName + `=(.*?)&?\s?`
+	paramItemRegExp := paramName + `=([^&]*)`
 
 	modifyPostBody(req, paramItemRegExp, "=", newValue)
 }
@@ -288,7 +289,7 @@ func modifyPostFormParam(req *http.Request, paramName string, newValue string) {
 //  @param newValue
 //
 func modifyPostMultiDataParam(req *http.Request, paramName string, newValue string) {
-	paramItemRegExp := "name=\"" + paramName + "\".*?" + "\r\n\r\n" + `(.*)`
+	paramItemRegExp := "name=\"" + paramName + "\".*?" + "\r\n\r\n" + "([^\r\n]*)"
 
 	modifyPostBody(req, paramItemRegExp, "\r\n\r\n", newValue)
 }
@@ -316,6 +317,11 @@ func modifyPostBody(req *http.Request, paramItemRegExp string, paramKVSeparator 
 	paramItem := submatchs[0]
 	srcValue := submatchs[1]
 
+	if srcValue == "" {
+		logger.Infoln("original parameter has no value")
+		return
+	}
+
 	// split paramItem into two parts, key-part and value-part
 	splits := strings.Split(paramItem, paramKVSeparator)
 
@@ -332,7 +338,108 @@ func modifyPostBody(req *http.Request, paramItemRegExp string, paramKVSeparator 
 	req.Body = aio.TransformReadCloser(bytes.NewReader([]byte(newBody)))
 
 	// update Content-Length
-	req.Header.Set("Content-Length", fmt.Sprintf("%d", len(newBody)))
+	req.ContentLength = int64(int(len(newBody)))
+}
+
+//
+// ModifyParamByRegExp
+//  @Description: modify parameter value everywhere through specified value format
+//  @param req
+//  @param paramName
+//  @param newValue
+//  @return *http.Request
+//
+func ModifyParamByRegExp(req *http.Request, paramName string, newValue string) *http.Request {
+
+	newReq := ModifyQueryParam(req, paramName, newValue)
+
+	if newReq != nil {
+		return newReq
+	}
+
+	newReq = ModifyPostParam(req, paramName, newValue)
+
+	if newReq != nil {
+		return newReq
+	}
+
+	return nil
+}
+
+//
+// ModifyQueryParamByRegExp
+//  @Description: modify query parameter value  through specified value format
+//  @param req
+//  @param valueRegExp
+//  @param newValue
+//  @return *http.Request
+//
+func ModifyQueryParamByRegExp(req *http.Request, valueRegExp string, newValue string) *http.Request {
+	re := regexp.MustCompile(valueRegExp)
+
+	findAllString := re.FindAllString(req.URL.RawQuery, -1)
+	if len(findAllString) > 0 {
+		// clone request
+		newReq := RequestClone(req)
+
+		newReq.URL.RawQuery = strings.Replace(req.URL.RawQuery, findAllString[0], newValue, 1)
+		return newReq
+	}
+
+	return nil
+}
+
+//
+// ModifyPostParamByRegExp
+//  @Description: modify parameter value in post body through specified value format
+//  @param req
+//  @param valueRegExp value format
+//  @param newValue
+//  @return *http.Request
+//
+func ModifyPostParamByRegExp(req *http.Request, valueRegExp string, newValue string) *http.Request {
+
+	re := regexp.MustCompile(valueRegExp)
+
+	findAllString := re.FindAllString(req.URL.RawQuery, -1)
+	if len(findAllString) > 0 {
+		// clone request
+		newReq := RequestClone(req)
+
+		newReq.URL.RawQuery = strings.Replace(req.URL.RawQuery, findAllString[0], newValue, 1)
+		return newReq
+	}
+
+	ct := req.Header.Get("Content-Type")
+
+	// determine whether the request does have a body or not
+	if ct == "" {
+		logger.Debugln("target request does not have Content-Type header")
+		return nil
+	}
+
+	readAll, _ := ioutil.ReadAll(req.Body)
+	bodyStr := string(readAll)
+
+	matches := re.FindAllString(bodyStr, -1)
+
+	if len(matches) <= 0 {
+		return nil
+	}
+
+	// clone request
+	newReq := RequestClone(req)
+
+	// replace parameter matching the value format
+	newBody := strings.Replace(bodyStr, matches[0], newValue, 1)
+
+	// refill body
+	req.Body = aio.TransformReadCloser(bytes.NewReader([]byte(newBody)))
+
+	// update Content-Length
+	req.ContentLength = int64(int(len(newBody)))
+
+	return newReq
 }
 
 //

@@ -1,7 +1,6 @@
 package origin
 
 import (
-	"context"
 	"net/http"
 )
 
@@ -12,5 +11,5 @@ type TransferItem struct {
 }
 
 type Origin interface {
-	LoadOriginRequest(ctx context.Context, httpItemQueue chan *TransferItem)
+	LoadOriginRequest(httpItemQueue chan *TransferItem)
 }

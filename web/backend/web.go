@@ -2,8 +2,8 @@ package backend
 
 import (
 	"APIKiller/core/data"
+	"APIKiller/core/module"
 	logger "APIKiller/logger"
-	"context"
 	"encoding/base64"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -14,27 +14,37 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
-	"strings"
 )
 
 type APIServer struct {
 	Page int   `form:"page"`
 	Size int   `form:"size"`
 	Ids  []int `form:"ids"`
+	db   *gorm.DB
 }
 
 func (s *APIServer) init(ipaddr, port string) {
+	// load database
+	s.loadDatabase()
+
 	server := gin.Default()
+
+	// append route
+	s.route(server)
+
+	// start server
+	server.Run(fmt.Sprintf("%s:%s", ipaddr, port))
+}
+
+func (s *APIServer) route(server *gin.Engine) {
 
 	group := server.Group("/")
 	group.GET("/test", s.test)
 	group.GET("/list", s.list)
 	group.GET("/check", s.updateCheckState)
-
-	server.Run(fmt.Sprintf("%s:%s", ipaddr, port))
 }
 
-func (s *APIServer) db() *gorm.DB {
+func (s *APIServer) loadDatabase() {
 	//dsn := "user:pass@tcp(127.0.0.1:3306)/dbname?charset=utf8mb4&parseTime=True&loc=Local"
 	dsn := fmt.Sprintf("root:123456@tcp(192.168.52.153:3306)/apikiller?charset=utf8mb4&parseTime=True&loc=Local")
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
@@ -46,7 +56,8 @@ func (s *APIServer) db() *gorm.DB {
 		log.Errorln("Connect database error", err)
 		panic(err)
 	}
-	return db
+
+	s.db = db
 }
 
 func (s *APIServer) test(c *gin.Context) {
@@ -58,9 +69,11 @@ func (s *APIServer) getHttpItembyId(Id string) string {
 	// convert string to id
 	id, _ := strconv.Atoi(Id)
 
-	item := &data.HttpItem{}
+	item := &data.HttpItem{
+		Id: int64(id),
+	}
 
-	s.db().Find(item).Where("id = ?", id)
+	s.db.Find(item)
 
 	// decode base64
 	decodeString, _ := base64.StdEncoding.DecodeString(item.Item)
@@ -71,9 +84,9 @@ func (s *APIServer) getHttpItembyId(Id string) string {
 func (s *APIServer) updateCheckState(c *gin.Context) {
 	c.Writer.Header().Set("Access-Control-Allow-Origin", "*") // ignore CORS
 
-	var v data.DataItemStr
-	_ = c.ShouldBindJSON(&v)
-	tx := s.db().Model(&v).Where("Id=?", c.PostForm("Id")).Update("CheckState", false)
+	logger.Debugln(c.Query("Id"))
+
+	tx := s.db.Model(&data.DataItemStr{}).Where("Id=?", c.Query("Id")).Update("check_state", true)
 	if tx.Error != nil {
 		logger.Errorln(tx.Error.Error())
 	}
@@ -87,7 +100,7 @@ func (s *APIServer) list(c *gin.Context) {
 
 	items := make([]data.DataItemStr, 1024)
 
-	s.db().Find(&items)
+	s.db.Where("vuln_type not like ?", "%"+module.AsyncDetectVulnTypeSeperator+"%").Order("domain").Order("url").Find(&items)
 
 	// recover http item string from id
 	for i, item := range items {
@@ -98,26 +111,10 @@ func (s *APIServer) list(c *gin.Context) {
 		items[i].SourceResponse = s.getHttpItembyId(item.SourceResponse)
 
 		//item.VulnRequest
-		ids := strings.Split(item.VulnRequest, ",")
-		if len(ids) != 0 {
-			result := ""
-			for _, id := range ids {
-				result += "**************************************************\n"
-				result += s.getHttpItembyId(id)
-			}
-			items[i].VulnRequest = result
-		}
+		items[i].VulnRequest = s.getHttpItembyId(item.VulnRequest)
 
 		//item.VulnResponse
-		ids2 := strings.Split(item.VulnResponse, ",")
-		if len(ids2) != 0 {
-			result := ""
-			for _, id := range ids2 {
-				result += "**************************************************\n"
-				result += s.getHttpItembyId(id)
-			}
-			items[i].VulnResponse = result
-		}
+		items[i].VulnResponse = s.getHttpItembyId(item.VulnResponse)
 	}
 
 	data := make(map[string]interface{})
@@ -127,13 +124,7 @@ func (s *APIServer) list(c *gin.Context) {
 	c.JSON(http.StatusOK, items)
 }
 
-func Server() {
-	server := APIServer{}
-
-	server.init("127.0.0.1", "80")
-}
-
-func NewAPIServer(ctx context.Context) {
+func NewAPIServer() {
 	server := APIServer{}
 
 	// disable logging

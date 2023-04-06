@@ -6,7 +6,6 @@ import (
 	"APIKiller/core/origin"
 	logger "APIKiller/logger"
 	"bytes"
-	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
@@ -20,7 +19,7 @@ import (
 type RealTimeOrigin struct {
 }
 
-func (r *RealTimeOrigin) LoadOriginRequest(ctx context.Context, httpItemQueue chan *origin.TransferItem) {
+func (r *RealTimeOrigin) LoadOriginRequest(httpItemQueue chan *origin.TransferItem) {
 	logger.Infoln("[Load Request] load request from real time origin")
 	// get config
 	address := viper.GetString("app.origin.realTime.address")
@@ -96,6 +95,10 @@ func proxyN(httpItemQueue chan *origin.TransferItem) *goproxy.ProxyHttpServer {
 
 		return resp
 	})
+
+	// handle https connection
+	proxy.OnRequest().HandleConnect(goproxy.AlwaysMitm)
+
 	return proxy
 }
 

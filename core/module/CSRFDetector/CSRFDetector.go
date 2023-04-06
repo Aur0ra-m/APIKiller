@@ -5,7 +5,7 @@ import (
 	"APIKiller/core/data"
 	"APIKiller/core/module"
 	logger "APIKiller/logger"
-	"context"
+	"APIKiller/util"
 	"github.com/antlabs/strsim"
 	"github.com/spf13/viper"
 	"io/ioutil"
@@ -22,7 +22,7 @@ type CSRFDetector struct {
 	mu                 sync.Mutex
 }
 
-func (d *CSRFDetector) Detect(ctx context.Context, item *data.DataItem) {
+func (d *CSRFDetector) Detect(item *data.DataItem) (result *data.DataItem) {
 	logger.Debugln("[Detect] CSRF detect")
 
 	srcResp := item.SourceResponse
@@ -31,7 +31,7 @@ func (d *CSRFDetector) Detect(ctx context.Context, item *data.DataItem) {
 	// same-site check with lock
 	d.mu.Lock()
 	if d.samesitePolicy[srcReq.Host] == "" {
-		d.getSameSitePolicy(ctx, item)
+		d.getSameSitePolicy(item)
 	}
 	d.mu.Unlock()
 
@@ -50,25 +50,25 @@ func (d *CSRFDetector) Detect(ctx context.Context, item *data.DataItem) {
 		return
 	}
 
-	// copy request
-	request := http2.RequestClone(srcReq)
+	// copy newReq
+	newReq := http2.RequestClone(srcReq)
 
 	// delete referer and origin
-	if request.Header.Get("Referer") != "" {
-		request.Header.Del("Referer")
+	if newReq.Header.Get("Referer") != "" {
+		newReq.Header.Del("Referer")
 	}
 
-	if request.Header.Get("Origin") != "" {
-		request.Header.Del("Origin")
+	if newReq.Header.Get("Origin") != "" {
+		newReq.Header.Del("Origin")
 	}
 
 	// find token position and detect before delete csrf token
 	// 1. row query
 
-	if request.URL.RawQuery != "" {
+	if newReq.URL.RawQuery != "" {
 		editedRawQuery := []string{}
 
-		for _, kv := range strings.Split(request.URL.RawQuery, "&") {
+		for _, kv := range strings.Split(newReq.URL.RawQuery, "&") {
 			splits := strings.Split(kv, "=")
 			key := splits[0]
 			//value := splits[1]
@@ -81,39 +81,38 @@ func (d *CSRFDetector) Detect(ctx context.Context, item *data.DataItem) {
 			// add to editedRawQuery
 			editedRawQuery = append(editedRawQuery, kv)
 		}
-		request.URL.RawQuery = strings.Join(editedRawQuery, "&")
+		newReq.URL.RawQuery = strings.Join(editedRawQuery, "&")
 	}
 
 	// 2. post body(application/x-www-form-urlencoded,multipart/form-data )
-	for k, _ := range request.PostForm {
+	for k, _ := range newReq.PostForm {
 		match, _ := regexp.Match(d.csrfTokenPattern, []byte(k))
 		if match {
-			request.PostForm.Del(k)
+			newReq.PostForm.Del(k)
 		}
 	}
 
-	// make request
-	response := http2.DoRequest(request)
-	if response == nil {
+	// make newReq
+	newResp := http2.DoRequest(newReq)
+	if newResp == nil {
 		return
 	}
 
 	// judge and save result
-	if d.judge(srcResp, response) {
-
-		item.VulnType = append(item.VulnType, "csrf")
-		item.VulnRequest = append(item.VulnRequest, request)
-		item.VulnResponse = append(item.VulnResponse, response)
+	if d.judge(srcResp, newResp) {
+		return util.BuildResult(item, "CSRF", newReq, newResp)
 	}
+
+	return nil
 }
 
 // getSameSitePolicy
 //
 //	@Description: get same-site policy from response received from the request deleted cookie
 //	@receiver d
-//	@param ctx
+//	@param
 //	@param item
-func (d *CSRFDetector) getSameSitePolicy(ctx context.Context, item *data.DataItem) {
+func (d *CSRFDetector) getSameSitePolicy(item *data.DataItem) {
 	// copy request
 	request := http2.RequestClone(item.SourceRequest)
 	// delete cookie and get set-cookie header from response
@@ -164,7 +163,7 @@ func (d *CSRFDetector) judge(srcResponse, response *http.Response) bool {
 	return false
 }
 
-func NewCSRFDetector(ctx context.Context) module.Detecter {
+func NewCSRFDetector() module.Detecter {
 	if viper.GetInt("app.module.CSRFDetector.option") == 0 {
 		return nil
 	}

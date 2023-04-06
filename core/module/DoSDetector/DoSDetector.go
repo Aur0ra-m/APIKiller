@@ -5,7 +5,6 @@ import (
 	"APIKiller/core/module"
 	logger "APIKiller/logger"
 	"github.com/spf13/viper"
-	"golang.org/x/net/context"
 )
 
 type DosDetector struct {
@@ -14,18 +13,17 @@ type DosDetector struct {
 	d2       *resourceSizeDetector
 }
 
-func (d DosDetector) Detect(ctx context.Context, item *data.DataItem) {
+func (d DosDetector) Detect(item *data.DataItem) (result *data.DataItem) {
 	logger.Debugln("[Detect] DoS detect")
 
 	// rate limit
-	//d.d1.Detect(ctx, item)
+	//d.d1.Detect( item)
 
 	// the size of resource lack of control
-	d.d2.Detect(ctx, item)
-
+	return d.d2.Detect(item)
 }
 
-func NewDoSDetector(ctx context.Context) module.Detecter {
+func NewDoSDetector() module.Detecter {
 	if viper.GetInt("app.module.DoSDetector.option") == 0 {
 		return nil
 	}

@@ -1,7 +1,6 @@
 package filter
 
 import (
-	"context"
 	"net/http"
 )
 
@@ -10,14 +9,18 @@ const (
 	FilterBlocked = false
 )
 
+var (
+	Filters []Filter
+)
+
 type Filter interface {
-	Filter(context.Context, *http.Request) bool
+	Filter(*http.Request) bool
 }
 
-func RegisterFilter(filters []Filter, filter Filter) []Filter {
+func RegisterFilter(filter Filter) {
 	if filter == nil {
-		return filters
+		return
 	}
 
-	return append(filters, filter)
+	Filters = append(Filters, filter)
 }

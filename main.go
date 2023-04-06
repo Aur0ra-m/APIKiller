@@ -3,10 +3,8 @@ package main
 import (
 	"APIKiller/cmd"
 	"APIKiller/core"
-	"APIKiller/core/ahttp"
 	"APIKiller/core/ahttp/hook"
 	"APIKiller/core/aio"
-	"APIKiller/core/data"
 	"APIKiller/core/database"
 	"APIKiller/core/filter"
 	"APIKiller/core/module"
@@ -21,8 +19,8 @@ import (
 	"APIKiller/core/origin/realTimeOrigin"
 	logger "APIKiller/logger"
 	"APIKiller/web/backend"
-	"context"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"os"
 	"plugin"
@@ -31,7 +29,8 @@ import (
 )
 
 const (
-	VERSION = "1.0.0"
+	VERSION     = "1.0.0"
+	LoggerLevel = logrus.InfoLevel
 )
 
 func main() {
@@ -41,21 +40,19 @@ func main() {
 	// init cmd line
 	cmd := cmd.CmdInit()
 
-	// Context initial
-	ctx := context.TODO()
-
 	// load database\modules\filters\notifier and so on
-	ctx = loadConfig(ctx, cmd.ConfigPath)
-	ctx = loadDatabase(ctx)
-	ctx = loadModules(ctx)
-	ctx = loadFilter(ctx)
-	ctx = loadNotifer(ctx)
-	ctx = loadHooks(ctx)
+	loadLogger()
+	loadConfig(cmd.ConfigPath)
+	loadDatabase()
+	loadModules()
+	loadFilter()
+	loadNotifer()
+	loadHooks()
 
 	// start web server and so on
 	if cmd.Web {
 		logger.Infoln("load web server")
-		go backend.NewAPIServer(ctx)
+		go backend.NewAPIServer()
 	}
 
 	// create a httpItem channel
@@ -66,10 +63,10 @@ func main() {
 		if cmd.FileInput != "" {
 			//inputOrigin := fileInputOrigin.NewFileInputOrigin("C:\\Users\\Lenovo\\Desktop\\src.txt")
 			inputOrigin := fileInputOrigin.NewFileInputOrigin(cmd.FileInput)
-			inputOrigin.LoadOriginRequest(ctx, httpItemQueue)
+			inputOrigin.LoadOriginRequest(httpItemQueue)
 		} else {
 			inputOrigin := realTimeOrigin.NewRealTimeOrigin()
-			inputOrigin.LoadOriginRequest(ctx, httpItemQueue)
+			inputOrigin.LoadOriginRequest(httpItemQueue)
 		}
 	}()
 
@@ -84,11 +81,9 @@ func main() {
 		httpItem.Resp.Body = aio.TransformReadCloser(httpItem.Resp.Body)
 
 		// filter requests
-		filters := ctx.Value("filters").([]filter.Filter)
-
 		flag := true // true -pass false -block
-		for _, f := range filters {
-			if f.Filter(ctx, httpItem.Req) == filter.FilterBlocked {
+		for _, f := range filter.Filters {
+			if f.Filter(httpItem.Req) == filter.FilterBlocked {
 				flag = false
 
 				logger.Infoln(fmt.Sprintf("filter %v, %v", httpItem.Req.Host, httpItem.Req.URL.Path))
@@ -102,7 +97,7 @@ func main() {
 		go func() {
 			limit <- 1
 
-			core.NewHandler(ctx, httpItem)
+			core.NewHandler(httpItem)
 
 			<-limit
 		}()
@@ -123,80 +118,49 @@ Version: %s`+"\n",
 		VERSION)
 }
 
-func loadNotifer(ctx context.Context) context.Context {
+func loadLogger() {
+	logger.Initial(LoggerLevel, ".")
+}
+
+func loadNotifer() {
 	logger.Infoln("loading notifier")
 
-	var notifer notify.Notify
-
 	if viper.GetString("app.notifier.Lark.webhookUrl") != "" {
-		notifer = notify.NewLarkNotifier(ctx)
+		notify.BindNotifier(notify.NewLarkNotifier())
 	} else if viper.GetString("app.notifier.Dingding.webhookUrl") != "" {
-		notifer = notify.NewDingdingNotifer(ctx)
+		notify.BindNotifier(notify.NewDingdingNotifer())
 	} else {
-		return ctx
 	}
-
-	// init notify queue
-	notifer.SetNotifyQueue(make(chan *data.DataItem, 30))
-
-	// message queue
-	go func() {
-		var item *data.DataItem
-		for {
-			item = <-notifer.NotifyQueue()
-			notifer.Notify(item)
-		}
-	}()
-
-	return context.WithValue(ctx, "notifier", notifer)
 }
 
-func loadDatabase(ctx context.Context) context.Context {
+func loadDatabase() {
 	logger.Infoln("loading database")
 
-	db := database.NewMysqlClient(ctx)
-
-	// init queue
-	db.SetItemAddQueue(make(chan *data.DataItem, 100))
-
-	// message queue
-	go func() {
-		var item *data.DataItem
-		for {
-			item = <-db.ItemAddQueue()
-			db.AddInfo(item)
-		}
-	}()
-
-	return context.WithValue(ctx, "db", db)
+	// bind global database
+	database.BindDatabase(database.NewMysqlClient())
 }
 
-func loadModules(ctx context.Context) context.Context {
+func loadModules() {
 	logger.Infoln("loading modules")
 
-	var modules []module.Detecter
+	module.RegisterModule(authorizedDetector.NewAuthorizedDetector())
+	module.RegisterModule(A40xBypasserModule.NewA40xBypassModule())
+	module.RegisterModule(CSRFDetector.NewCSRFDetector())
+	module.RegisterModule(openRedirectDetector.NewOpenRedirectDetector())
+	module.RegisterModule(DoSDetector.NewDoSDetector())
 
-	modules = append(modules, authorizedDetector.NewAuthorizedDetector(ctx))
-	modules = append(modules, A40xBypasserModule.NewA40xBypassModule(ctx))
-	modules = append(modules, CSRFDetector.NewCSRFDetector(ctx))
-	modules = append(modules, openRedirectDetector.NewOpenRedirectDetector(ctx))
-	modules = append(modules, DoSDetector.NewDoSDetector(ctx))
-
-	return context.WithValue(ctx, "modules", modules)
 }
 
-func loadFilter(ctx context.Context) context.Context {
+func loadFilter() {
 	logger.Infoln("loading filters")
-	var filters []filter.Filter
 
-	filters = append(filters, filter.NewHttpFilter())
-	filters = append(filters, filter.NewStaticFileFilter(ctx))
-	filters = append(filters, filter.NewDuplicateFilter())
+	filter.RegisterFilter(filter.NewHttpFilter())
+	filter.RegisterFilter(filter.NewStaticFileFilter())
+	filter.RegisterFilter(filter.NewDuplicateFilter())
 
-	return context.WithValue(ctx, "filters", filters)
 }
 
-func loadConfig(ctx context.Context, configPath string) context.Context {
+func loadConfig(configPath string) {
 	logger.Infoln("loading config")
 
 	viper.SetConfigFile(configPath)
@@ -205,15 +169,12 @@ func loadConfig(ctx context.Context, configPath string) context.Context {
 	if err != nil {
 		panic(err)
 	}
-
-	return ctx
 }
 
-func loadHooks(ctx context.Context) context.Context {
+func loadHooks() {
 	// except windows os
 	if runtime.GOOS == "windows" {
 		logger.Infoln("not support windows operation system")
-		return ctx
 	}
 
 	logger.Infoln("loading hooks")
@@ -228,8 +189,6 @@ func loadHooks(ctx context.Context) context.Context {
 		if err != nil {
 			panic(err)
 		}
-
-		return ctx
 	}
 
 	// list directory
@@ -261,15 +220,13 @@ func loadHooks(ctx context.Context) context.Context {
 			panic(err)
 		}
 
-		var greeter hook.RequestHook
-		greeter, ok := Hook.(hook.RequestHook)
+		var Hookk hook.RequestHook
+		Hookk, ok := Hook.(hook.RequestHook)
 		if !ok {
 			logger.Errorln(fmt.Sprintf("load hook %s error: unexpected type from module symbol", soName))
 			panic(err)
 		}
 
-		ahttp.RegisterHooks(greeter)
+		hook.RegisterHooks(Hookk)
 	}
-
-	return ctx
 }

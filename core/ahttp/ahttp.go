@@ -11,11 +11,9 @@ import (
 	"strings"
 )
 
-var hooks []hook.RequestHook
-
 // DoRequest
 //
-//	@Description: make a http request, and transform body before return response
+//	@Description: make a http request without auto 30x redirect
 //	@param r
 //	@return *http.Response
 func DoRequest(r *http.Request) *http.Response {
@@ -31,15 +29,22 @@ func DoRequest(r *http.Request) *http.Response {
 		}
 		// https client
 		Client = http.Client{
+			CheckRedirect: func(req *http.Request, via []*http.Request) error {
+				return http.ErrUseLastResponse
+			},
 			Transport: tr,
 		}
 	} else {
 		// http client
-		Client = http.Client{}
+		Client = http.Client{
+			CheckRedirect: func(req *http.Request, via []*http.Request) error {
+				return http.ErrUseLastResponse
+			},
+		}
 	}
 
 	// hook before initiating http request
-	for _, requestHook := range hooks {
+	for _, requestHook := range hook.Hooks {
 		requestHook.HookBefore(r)
 	}
 
@@ -50,7 +55,7 @@ func DoRequest(r *http.Request) *http.Response {
 	}
 
 	// hook after finishing http request
-	for _, requestHook := range hooks {
+	for _, requestHook := range hook.Hooks {
 		requestHook.HookAfter(r)
 	}
 
@@ -60,15 +65,6 @@ func DoRequest(r *http.Request) *http.Response {
 	}
 
 	return response
-}
-
-//
-// RegisterHooks
-//  @Description: append http request hook to modify request data
-//  @param requestHook
-//
-func RegisterHooks(requestHook hook.RequestHook) {
-	hooks = append(hooks, requestHook)
 }
 
 func RequestClone(src *http.Request) *http.Request {

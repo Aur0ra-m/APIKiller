@@ -1,14 +1,14 @@
 <h2 align="center"><img align="center" alt="logo.png" height="200px" src="static/img/img_logo.png" width="auto" /><br/><br/>
 APIKiller-企业API安全保护神</h2>
 <p align="center">
-  <d href="#项目简介">简介</d> •
-  <d href="#项目架构">架构</d> •
-  <d href="#Feature">Feature</d> •
-  <d href="#食用宝典">食用宝典</d> •
-  <d href="#二次开发文档">二次开发文档</d> •
-  <d href="#更新记录">更新</d> •
-  <d href="#项目社区">项目社区</d> •
-  <d href="#致谢">致谢</d>
+  <a href="#项目简介">简介</a> •
+  <a href="#项目架构">架构</a> •
+  <a href="#Feature">Feature</a> •
+  <a href="#食用宝典">食用宝典</a> •
+  <a href="#二次开发文档">二次开发文档</a> •
+  <a href="#更新记录">更新</a> •
+  <a href="#项目社区">项目社区</a> •
+  <a href="#致谢">致谢</a>
 </p><br/>
 
 
@@ -168,19 +168,19 @@ APIKiller-企业API安全保护神</h2>
     )
     
     type RequestHook interface {
-        HookBefore(*http.Request) // hook before initiating http request
-        HookAfter(*http.Request)  // hook after finishing http request
+        HookBefore(*http.Request) // hook before initiating http newReq
+        HookAfter(*http.Request)  // hook after finishing http newReq
     }
     
     type AddHeaderHook struct {
     }
     
-    func (d AddHeaderHook) HookBefore(request *http.Request) {
+    func (a AddHeaderHook) HookBefore(newReq *http.Request) {
         fmt.Println("HOOK Before: hhhhhhh")
         // ....
     }
     
-    func (d AddHeaderHook) HookAfter(request *http.Request) {
+    func (a AddHeaderHook) HookAfter(newReq *http.Request) {
     
     }
     
@@ -239,7 +239,8 @@ https://github.com/Aur0ra-m/APIKiller/wiki
 - 【发布】发布项目Release 1.0.0
 - 【优化】多处增添多线程操作，再次优化整体性能
 - 【功能】增添可指定配置文件操作
-- 【优化】 提供数据库一键部署方案
+- 【优化】提供数据库一键部署方案
+- 【优化】调整部分结构，修复部分bug
 
 
 ## 项目社区

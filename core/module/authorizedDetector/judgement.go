@@ -1,7 +1,6 @@
 package authorizedDetector
 
 import (
-	"context"
 	"github.com/antlabs/strsim"
 	"io/ioutil"
 	"net/http"
@@ -13,13 +12,13 @@ var (
 	Fail   = false
 )
 
-// Judge
+// judge
 //
 //	@Description: Judging whether there is an ultra vires
 //	@param sourceResp
 //	@param newResp
 //	@return bool true-->bypass, false-->fail
-func (d *AuthorizedDetector) Judge(ctx context.Context, srcResp, newResp *http.Response) bool {
+func (d *AuthorizedDetector) judge(srcResp, newResp *http.Response) bool {
 
 	for _, code := range d.blackStatusCodes {
 		if newResp.StatusCode == code {

@@ -5,7 +5,7 @@ import (
 	"APIKiller/core/data"
 	"APIKiller/core/module"
 	logger "APIKiller/logger"
-	"context"
+	"APIKiller/util"
 	"github.com/spf13/viper"
 	"io/ioutil"
 	"net/http"
@@ -18,31 +18,48 @@ type OpenRedirectDetector struct {
 	evilLink       string
 }
 
-func (d *OpenRedirectDetector) Detect(ctx context.Context, item *data.DataItem) {
+func (d *OpenRedirectDetector) Detect(item *data.DataItem) (result *data.DataItem) {
 	logger.Debugln("[Detect] Open-Redirect detect")
 
 	srcResp := item.SourceResponse
 	srcReq := item.SourceRequest
 
-	for _, param := range d.rawQueryParams {
-		newReq := ahttp.ModifyQueryParam(srcReq, param, d.evilLink)
-		if newReq == nil {
-			logger.Debugln("parameter not found")
-			continue
-		}
-
-		// do newReq
-		newResp := ahttp.DoRequest(newReq)
-
-		// judge
-		if d.judge(srcResp, newResp) {
-			item.VulnType = append(item.VulnType, "open-redirect")
-			item.VulnRequest = append(item.VulnRequest, newReq)
-			item.VulnResponse = append(item.VulnResponse, newResp)
-		}
-
+	newReq := ahttp.ModifyQueryParamByRegExp(srcReq, `https?://[^\s&]+`, d.evilLink)
+	if newReq == nil {
+		logger.Debugln("parameter not found")
 		return
 	}
+
+	// do newReq
+	newResp := ahttp.DoRequest(newReq)
+
+	// judge
+	if d.judge(srcResp, newResp) {
+		return util.BuildResult(item, "Open-Redirect", newReq, newResp)
+	}
+
+	// modify parameter by target parameters list
+	//for _, param := range d.rawQueryParams {
+	//	newReq := ahttp.ModifyQueryParam(srcReq, param, d.evilLink)
+	//	if newReq == nil {
+	//		logger.Debugln("parameter not found")
+	//		continue
+	//	}
+	//
+	//	// do newReq
+	//	newResp := ahttp.DoRequest(newReq)
+	//
+	//	// judge
+	//	if d.judge(srcResp, newResp) {
+	//		item.VulnType = append(item.VulnType, "open-redirect")
+	//		item.VulnRequest = append(item.VulnRequest, newReq)
+	//		item.VulnResponse = append(item.VulnResponse, newResp)
+	//	}
+	//
+	//	return
+	//}
+
+	return nil
 }
 
 func (d *OpenRedirectDetector) judge(srcResp, newResp *http.Response) bool {
@@ -60,10 +77,10 @@ func (d *OpenRedirectDetector) judge(srcResp, newResp *http.Response) bool {
 		}
 	}
 
-	return true
+	return false
 }
 
-func NewOpenRedirectDetector(ctx context.Context) module.Detecter {
+func NewOpenRedirectDetector() module.Detecter {
 	if viper.GetInt("app.module.openRedirectDetector.option") == 0 {
 		return nil
 	}

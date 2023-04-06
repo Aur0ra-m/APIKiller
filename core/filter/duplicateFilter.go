@@ -2,7 +2,6 @@ package filter
 
 import (
 	logger "APIKiller/logger"
-	"context"
 	"fmt"
 	"golang.org/x/exp/slices"
 	"net/http"
@@ -12,7 +11,7 @@ type DuplicateFilter struct {
 	history []string // []string{"GET domain /admin/index",}
 }
 
-func (f *DuplicateFilter) Filter(ctx context.Context, req *http.Request) bool {
+func (f *DuplicateFilter) Filter(req *http.Request) bool {
 	logger.Debugln("[Filter] duplicate")
 
 	// format

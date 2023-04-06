@@ -21,7 +21,7 @@ func test() {
 			//	return
 			//}
 			//
-			//modules[i].Detect(ctx, item)
+			//modules[i].Detect( item)
 		}()
 	}
 

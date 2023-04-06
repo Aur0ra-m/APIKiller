@@ -3,7 +3,7 @@ package DoSDetector
 import (
 	"APIKiller/core/ahttp"
 	"APIKiller/core/data"
-	"context"
+	"APIKiller/util"
 	"github.com/spf13/viper"
 	"net/http"
 	"strconv"
@@ -13,7 +13,7 @@ type resourceSizeDetector struct {
 	sizeParams []string
 }
 
-func (d *resourceSizeDetector) Detect(ctx context.Context, item *data.DataItem) {
+func (d *resourceSizeDetector) Detect(item *data.DataItem) (result *data.DataItem) {
 	srcReq := item.SourceRequest
 	srcResp := item.SourceResponse
 
@@ -28,16 +28,18 @@ func (d *resourceSizeDetector) Detect(ctx context.Context, item *data.DataItem) 
 		// do newReq
 		newResp := ahttp.DoRequest(newReq)
 
-		// judge
-		if d.judge(srcResp, newResp) {
-			item.VulnType = append(item.VulnType, "DoS-ResourceSizeNotStrict")
-			item.VulnRequest = append(item.VulnRequest, newReq)
-			item.VulnResponse = append(item.VulnResponse, newResp)
+		if newResp == nil {
+			return
 		}
 
-		return
+		// judge
+		if d.judge(srcResp, newResp) {
+			return util.BuildResult(item, "DoS-ResourceSizeNotStrict", newReq, newResp)
+		}
+
+		return nil
 	}
-	return
+	return nil
 
 }
 

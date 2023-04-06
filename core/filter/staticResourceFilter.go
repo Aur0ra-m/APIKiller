@@ -2,7 +2,6 @@ package filter
 
 import (
 	logger "APIKiller/logger"
-	"context"
 	"github.com/spf13/viper"
 	"net/http"
 	"strings"
@@ -12,7 +11,7 @@ type StaticResourceFilter struct {
 	forbidenExts []string
 }
 
-func (f *StaticResourceFilter) Filter(ctx context.Context, req *http.Request) bool {
+func (f *StaticResourceFilter) Filter(req *http.Request) bool {
 	logger.Debugln("[Filter] static file filter")
 
 	// get request path extension
@@ -32,7 +31,7 @@ func (f *StaticResourceFilter) Filter(ctx context.Context, req *http.Request) bo
 	return FilterPass
 }
 
-func NewStaticFileFilter(ctx context.Context) Filter {
+func NewStaticFileFilter() Filter {
 	logger.Infoln("[Load Filter] static file filter")
 
 	return &StaticResourceFilter{

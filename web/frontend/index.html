@@ -86,14 +86,17 @@
                   class="form-check-input"
                   type="checkbox"
                   v-model="paramItem[config.name]"
-                  @click="()=>false"
+                  disabled="true"
           />
         </template>
         <template v-if="config.type === 'switch'">
           <input
+                  :id="'cb' + paramItem['Id']"
                   class="checkbox"
                   type="checkbox"
-                  v-model="paramItem[config.name]"
+                  :checked="paramItem[config.name]"
+                  :disabled="paramItem[config.name]"
+                  :data-index="index"
           />
         </template>
         <template v-if="config.type === 'collapse'">
@@ -128,143 +131,146 @@
 </div>
 
 <script>
-  var host = 'http://127.0.0.1' //主站域名
+  var host = "http://127.0.0.1"; //主站域名
 
   var vm = new Vue({
-    el: '#app',
-    data: {
-      items: [{}],
-      fromlistConfigs: [
-        {
-          type: 'text',
-          name: 'Id',
-        },
-        {
-          type: 'text',
-          name: 'Domain',
-        },
-        {
-          type: 'text',
-          name: 'Url',
-        },
-        {
-          type: 'text',
-          name: 'Method',
-        },
-        {
-          type: 'checkbox',
-          name: 'Https',
-        },
-        {
-          type: 'collapse',
-          name: 'SourceRequest',
-        },
-        {
-          type: 'collapse',
-          name: 'SourceResponse',
-        },
-        {
-          type: 'text',
-          name: 'VulnType',
-        },
-        {
-          type: 'collapse',
-          name: 'VulnRequest',
-        },
-        {
-          type: 'collapse',
-          name: 'VulnResponse',
-        },
-        {
-          type: 'switch',
-          name: 'CheckState',
-        },
-      ],
+    el: "#app",
+    data() {
+      return {
+        items: [{}],
+        fromlistConfigs: [
+          {
+            type: "text",
+            name: "Id",
+          },
+          {
+            type: "text",
+            name: "Domain",
+          },
+          {
+            type: "text",
+            name: "Url",
+          },
+          {
+            type: "text",
+            name: "Method",
+          },
+          {
+            type: "checkbox",
+            name: "Https",
+          },
+          {
+            type: "collapse",
+            name: "SourceRequest",
+          },
+          {
+            type: "collapse",
+            name: "SourceResponse",
+          },
+          {
+            type: "text",
+            name: "VulnType",
+          },
+          {
+            type: "collapse",
+            name: "VulnRequest",
+          },
+          {
+            type: "collapse",
+            name: "VulnResponse",
+          },
+          {
+            type: "switch",
+            name: "CheckState",
+          },
+        ],
+      };
     },
     created() {
       //当vm实例的data和methods 初始化完毕后，vm实例会自动执行这个方法
-      this.getAllList()
+      this.getAllList();
     },
     methods: {
-      updateCheckState() {
-        function updateCheckState(Id, state) {
-          //默认只能将未打标更新为打标
-          let Url = host + '/check'
-          fetch(Url, {
-            method: 'post',
-            headers: {
-              'Content-Type':
-                      'application/x-www-form-urlencoded; charset=UTF-8',
-            },
-            data: 'Id=' + Id,
-          }).then(res => {
-            console.log(res)
-          })
-        }
+      handleSwitchChange() {
+        console.log(123);
+      },
+      updateCheckState(id) {
+        //默认只能将未打标更新为打标
+        let url = host + "/check?Id=" + id;
+        fetch(url)
+                .then((response) => response.json())
+                .then((data) => {
+                  console.log(data);
+                  alert("接口检查完成");
+                })
+                .catch((error) => {
+                  console.error(error);
+                });
       },
       getCheckComponentRefresh() {
+        var vueself = this;
         // 优化开关
-        $('.checkbox').bootstrapSwitch({
-          onText: 'checked', // 设置ON文本
-          offText: 'unchecked', // 设置OFF文本
-          onColor: 'success', // 设置ON文本颜色     (info/success/warning/danger/primary)
-          offColor: 'danger', // 设置OFF文本颜色        (info/success/warning/danger/primary)
-          size: 'normal', // 设置控件大小,从小到大  (mini/small/normal/large)
+        $(".checkbox").bootstrapSwitch({
+          onText: "checked", // 设置ON文本
+          offText: "unchecked", // 设置OFF文本
+          onColor: "success", // 设置ON文本颜色     (info/success/warning/danger/primary)
+          offColor: "danger", // 设置OFF文本颜色        (info/success/warning/danger/primary)
+          size: "normal", // 设置控件大小,从小到大  (mini/small/normal/large)
           // 当开关状态改变时触发
           onSwitchChange: function (event, state) {
             if (state == true) {
-              var Id = event.target.id // cbxxxxx
-              Id = Id.substring(2) //截取cb
-              this.updateCheckState(Id, state)
-            } else {
-              // updateCheckState(paramItem.Id, 0)
+              var Id = event.target.id; // cbxxxxx
+              Id = Id.substring(2); //截取cb
+              vueself.updateCheckState(Id, state);
+
+              // 控件和 Vue 有冲突
+              $(
+                      `.checkbox[data-index="${this.dataset.index}"]`
+              ).bootstrapSwitch('disabled', true);
             }
           },
-        })
+        });
       },
       getFormattedTime(timestamp) {
         return new Date(parseInt(timestamp) * 1000)
                 .toLocaleString()
-                .replace(/年|月/g, '-')
-                .replace(/日/g, ' ')
+                .replace(/年|月/g, "-")
+                .replace(/日/g, " ");
       },
       getAllList() {
         //获取列表的全部信息
-        console.log('GetAllList function')
+        console.log("GetAllList function");
 
-        var Url = host + '/list' //本地返回数据, 动态
+        var Url = host + "/list"; //本地返回数据, 动态
         fetch(Url, {
-          method: 'get',
+          method: "get",
         })
-                .then(res => {
-                  return res.json()
+                .then((res) => {
+                  return res.json();
                 })
-                .then(data => {
-                  this.items = data
+                .then((data) => {
+                  this.items = data;
                 })
                 .catch(() => {
-                  this.items = new Array(3).fill(0).map(() => ({
-                    Id: '12312421e',
-                    Domain: '123124sdasd1we',
-                    Url: '12312421432we',
-                    Method: 'GET',
+                  this.items = new Array(1).fill(0).map(() => ({
+                    Id: "123",
+                    Domain: "test",
+                    Url: "test",
+                    Method: "test",
                     Https: true,
-                    SourceRequest: '123',
-                    SourceResponse:
-                            'd1we123124214321asdasd1we123124214321asdasd1we123124214321asdasd1we123124214321asdasd1we',
-                    VulnType: 'we12',
-                    VulnRequest:
-                            '123124214asd1we123124214321asdasd1we123124214321asdasd1we123124214321asdasd1we123124214321asdasd1we',
-                    VulnResponse:
-                            '123124214321asaaaaafjaso321asdasd1we123124214321asdasd1we123124214321asdasd1we',
+                    SourceRequest: "test",
+                    SourceResponse: "test",
+                    VulnType: "test",
+                    VulnRequest: "test",
+                    VulnResponse: "test",
                     ReportTime: Date.now(),
                     CheckState: false,
-                  }))
+                  }));
                 })
-                .finally(() => this.getCheckComponentRefresh())
+                .finally(() => this.getCheckComponentRefresh());
       },
     },
-  })
+  });
 </script>
 </body>
 </html>

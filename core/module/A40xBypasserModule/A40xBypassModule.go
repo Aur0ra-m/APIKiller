@@ -5,7 +5,7 @@ import (
 	"APIKiller/core/data"
 	"APIKiller/core/module"
 	logger "APIKiller/logger"
-	"context"
+	"APIKiller/util"
 	"fmt"
 	"github.com/spf13/viper"
 	"golang.org/x/exp/slices"
@@ -32,7 +32,7 @@ type A40xBypassModule struct {
 	mu sync.Mutex
 }
 
-func (d *A40xBypassModule) Detect(ctx context.Context, item *data.DataItem) {
+func (d *A40xBypassModule) Detect(item *data.DataItem) (result *data.DataItem) {
 	logger.Debugln("[Detect] 40x bypass")
 	srcReq := item.SourceRequest
 	srcResp := item.SourceResponse
@@ -81,7 +81,7 @@ func (d *A40xBypassModule) Detect(ctx context.Context, item *data.DataItem) {
 
 		// path bypass
 		if vulnRequest == nil {
-			vulnRequest, vulnResponse = d.pathBypass(ctx, request, srcResp, t, v)
+			vulnRequest, vulnResponse = d.pathBypass(request, srcResp, t, v)
 		}
 
 		// protocol version
@@ -92,22 +92,22 @@ func (d *A40xBypassModule) Detect(ctx context.Context, item *data.DataItem) {
 	// api layer
 	if vulnRequest == nil {
 		// api version bypass
-		vulnRequest, vulnResponse = d.apiVersionBypass(ctx, request, srcResp, t, v)
+		vulnRequest, vulnResponse = d.apiVersionBypass(request, srcResp, t, v)
 	}
 
 	// save result
 	if vulnRequest != nil {
-		item.VulnType = append(item.VulnType, "40x bypass")
-		item.VulnRequest = append(item.VulnRequest, vulnRequest)
-		item.VulnResponse = append(item.VulnResponse, vulnResponse)
+		return util.BuildResult(item, "40x bypass", vulnRequest, vulnResponse)
 	}
+
+	return nil
 }
 
 //
 // pathBypass
 //  @Description:
 //  @receiver a
-//  @param ctx
+//  @param
 //  @param srcRequest
 //  @param srcResponse
 //  @param t
@@ -115,14 +115,14 @@ func (d *A40xBypassModule) Detect(ctx context.Context, item *data.DataItem) {
 //  @return *http.Request
 //  @return *http.Response
 //
-func (d *A40xBypassModule) pathBypass(ctx context.Context, srcRequest *http.Request, srcResponse *http.Response, t int, v interface{}) (*http.Request, *http.Response) {
+func (d *A40xBypassModule) pathBypass(srcRequest *http.Request, srcResponse *http.Response, t int, v interface{}) (*http.Request, *http.Response) {
 	var requestClone *http.Request
 
 	// /admin/get --> /admin/Get
 	requestClone = ahttp.RequestClone(srcRequest)
 	ahttp.ModifyURLPathCase(requestClone.URL)
 	response := ahttp.DoRequest(requestClone)
-	if d.judge(ctx, t, v, srcResponse, response) {
+	if d.judge(t, v, srcResponse, response) {
 		return requestClone, response
 	}
 
@@ -131,7 +131,7 @@ func (d *A40xBypassModule) pathBypass(ctx context.Context, srcRequest *http.Requ
 		requestClone = ahttp.RequestClone(srcRequest)
 		ahttp.ModifyURLPathMidPad(requestClone.URL, midPadding)
 		response := ahttp.DoRequest(requestClone)
-		if d.judge(ctx, t, v, srcResponse, response) {
+		if d.judge(t, v, srcResponse, response) {
 			return requestClone, response
 		}
 	}
@@ -141,7 +141,7 @@ func (d *A40xBypassModule) pathBypass(ctx context.Context, srcRequest *http.Requ
 		requestClone = ahttp.RequestClone(srcRequest)
 		ahttp.ModifyURLPathEndPad(requestClone.URL, endPadding)
 		response := ahttp.DoRequest(requestClone)
-		if d.judge(ctx, t, v, srcResponse, response) {
+		if d.judge(t, v, srcResponse, response) {
 			return requestClone, response
 		}
 	}
@@ -165,7 +165,7 @@ func (d *A40xBypassModule) appendIpHeaders(req *http.Request) {
 // apiVersionBypass
 //  @Description:
 //  @receiver a
-//  @param ctx
+//  @param
 //  @param srcRequest
 //  @param srcResponse
 //  @param t
@@ -173,7 +173,7 @@ func (d *A40xBypassModule) appendIpHeaders(req *http.Request) {
 //  @return *http.Request
 //  @return *http.Response
 //
-func (d *A40xBypassModule) apiVersionBypass(ctx context.Context, srcRequest *http.Request, srcResponse *http.Response, t int, v interface{}) (*http.Request, *http.Response) {
+func (d *A40xBypassModule) apiVersionBypass(srcRequest *http.Request, srcResponse *http.Response, t int, v interface{}) (*http.Request, *http.Response) {
 
 	compiler, _ := regexp.Compile("/" + d.apiVersionFormat + "/")
 	foundString := compiler.FindString(srcRequest.URL.Path)
@@ -187,7 +187,7 @@ func (d *A40xBypassModule) apiVersionBypass(ctx context.Context, srcRequest *htt
 			requestClone := ahttp.RequestClone(srcRequest)
 			ahttp.ModifyURLPathAPIVerion(requestClone.URL, foundString, fmt.Sprintf("/%s%d/", d.apiVersionPrefix, i))
 			response := ahttp.DoRequest(requestClone)
-			if d.judge(ctx, t, v, srcResponse, response) {
+			if d.judge(t, v, srcResponse, response) {
 				return requestClone, response
 			}
 		}
@@ -201,14 +201,14 @@ func (d *A40xBypassModule) apiVersionBypass(ctx context.Context, srcRequest *htt
 // judge
 //  @Description: Judging whether bypass successfully
 //  @receiver a
-//  @param ctx
+//  @param
 //  @param t type of auth failed flag(e.g. code:1, body:2)
 //  @param value
 //  @param srcResp
 //  @param newResp
 //  @return bool
 //
-func (d *A40xBypassModule) judge(ctx context.Context, t int, value interface{}, srcResp, newResp *http.Response) bool {
+func (d *A40xBypassModule) judge(t int, value interface{}, srcResp, newResp *http.Response) bool {
 	if t == 1 {
 		//
 	} else if t == 2 {
@@ -229,7 +229,7 @@ func (d *A40xBypassModule) judge(ctx context.Context, t int, value interface{}, 
 	return true
 }
 
-func NewA40xBypassModule(ctx context.Context) module.Detecter {
+func NewA40xBypassModule() module.Detecter {
 	if viper.GetInt("app.module.40xBypassModule.option") == 0 {
 		return nil
 	}

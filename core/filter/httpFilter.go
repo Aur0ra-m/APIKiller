@@ -2,7 +2,6 @@ package filter
 
 import (
 	logger "APIKiller/logger"
-	"context"
 	"github.com/spf13/viper"
 	"net/http"
 	"regexp"
@@ -12,7 +11,7 @@ type HttpFilter struct {
 	hostsExp []string
 }
 
-func (f *HttpFilter) Filter(ctx context.Context, req *http.Request) bool {
+func (f *HttpFilter) Filter(req *http.Request) bool {
 	logger.Debugln("[Filter] ahttp filter")
 
 	// match through RegExp

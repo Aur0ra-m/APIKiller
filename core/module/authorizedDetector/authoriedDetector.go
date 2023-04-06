@@ -5,7 +5,7 @@ import (
 	"APIKiller/core/data"
 	"APIKiller/core/module"
 	logger "APIKiller/logger"
-	"context"
+	"APIKiller/util"
 	"github.com/spf13/viper"
 )
 
@@ -16,69 +16,71 @@ type AuthorizedDetector struct {
 	blackKeywords    []string
 }
 
-func (d *AuthorizedDetector) Detect(ctx context.Context, item *data.DataItem) {
+func (d *AuthorizedDetector) Detect(item *data.DataItem) (result *data.DataItem) {
 	logger.Debugln("[Detect] authorized detect")
 
-	d.unauthorizedDetect(ctx, item)
-	for _, t := range item.VulnType {
-		if t == "unauthorized" {
-			return
-		}
+	resultDataItem := d.unauthorizedDetect(item)
+	if resultDataItem != nil {
+		return resultDataItem
 	}
 
-	d.multiRolesDetect(ctx, item)
+	resultDataItem = d.multiRolesDetect(item)
+	if resultDataItem != nil {
+		return resultDataItem
+	}
 
+	return nil
 }
 
 // unauthorizedDetect
 //
 //	@Description: unauthorized header detect
 //	@receiver d
-//	@param ctx
+//	@param
 //	@param item
-func (d *AuthorizedDetector) unauthorizedDetect(ctx context.Context, item *data.DataItem) {
-	req := http2.RequestClone(item.SourceRequest)
+func (d *AuthorizedDetector) unauthorizedDetect(item *data.DataItem) (result *data.DataItem) {
+	newReq := http2.RequestClone(item.SourceRequest)
 
 	// delete auth header
-	req.Header.Del(d.authHeader)
+	http2.RemoveHeader(newReq, d.authHeader)
 
 	// make request and judge
-	response := http2.DoRequest(req)
+	newResp := http2.DoRequest(newReq)
 
-	if d.Judge(ctx, item.SourceResponse, response) == Bypass {
-		item.VulnType = append(item.VulnType, "unauthorized")
-		item.VulnRequest = append(item.VulnRequest, req)
-		item.VulnResponse = append(item.VulnResponse, response)
+	if d.judge(item.SourceResponse, newResp) == Bypass {
+		return util.BuildResult(item, "unauthorized", newReq, newResp)
 	}
+
+	return nil
 }
 
 // multiRolesDetect
 //
 //	@Description: multiple roles detect
 //	@receiver d
-//	@param ctx
+//	@param
 //	@param item
-func (d *AuthorizedDetector) multiRolesDetect(ctx context.Context, item *data.DataItem) {
-	req := http2.RequestClone(item.SourceRequest)
+func (d *AuthorizedDetector) multiRolesDetect(item *data.DataItem) (result *data.DataItem) {
+	newReq := http2.RequestClone(item.SourceRequest)
 
 	// default support one role
 	newRole := d.Roles[0]
 
 	// change auth header
-	req.Header.Set(d.authHeader, newRole)
+	newReq.Header.Set(d.authHeader, newRole)
 
 	// do request
-	response := http2.DoRequest(req)
+	newResp := http2.DoRequest(newReq)
 
 	// judge
-	if d.Judge(ctx, item.SourceResponse, response) == Bypass {
-		item.VulnType = append(item.VulnType, "authorized-multiRoles")
-		item.VulnRequest = append(item.VulnRequest, req)
-		item.VulnResponse = append(item.VulnResponse, response)
+	if d.judge(item.SourceResponse, newResp) == Bypass {
+		return util.BuildResult(item, "authorized-multiRoles", newReq, newResp)
 	}
+
+	return nil
 }
 
-func NewAuthorizedDetector(ctx context.Context) module.Detecter {
+func NewAuthorizedDetector() module.Detecter {
 	if viper.GetInt("app.module.authorizedDetector.option") == 0 {
 		return nil
 	}
