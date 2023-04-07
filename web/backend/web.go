@@ -100,7 +100,7 @@ func (s *APIServer) list(c *gin.Context) {
 
 	items := make([]data.DataItemStr, 1024)
 
-	s.db.Where("vuln_type not like ?", "%"+module.AsyncDetectVulnTypeSeperator+"%").Order("domain").Order("url").Find(&items)
+	s.db.Where("vuln_type not like ?", "%"+module.AsyncDetectVulnTypeSeperator+"%").Order("domain").Order("url").Find(&items).Limit(128)
 
 	// recover http item string from id
 	for i, item := range items {

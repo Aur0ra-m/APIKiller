@@ -79,7 +79,12 @@
     <tr v-for="(paramItem, index) in items" :key="paramItem.Id + index">
       <td v-for="config in fromlistConfigs" :key="config.name">
         <template v-if="config.type === 'text'">
-          {{ paramItem[config.name] }}
+          <template v-if="config.name !== 'ReportTime'">
+            {{ paramItem[config.name] }}
+          </template>
+          <template v-if="config.name === 'ReportTime'">
+            {{ getFormattedTime(paramItem[config.name]) }}
+          </template>
         </template>
         <template v-if="config.type === 'checkbox'">
           <input

@@ -17,26 +17,25 @@ import (
 )
 
 type RealTimeOrigin struct {
+	address string
+	port    string
 }
 
-func (r *RealTimeOrigin) LoadOriginRequest(httpItemQueue chan *origin.TransferItem) {
+func (o *RealTimeOrigin) LoadOriginRequest() {
 	logger.Infoln("[Load Request] load request from real time origin")
-	// get config
-	address := viper.GetString("app.origin.realTime.address")
-	port := viper.GetString("app.origin.realTime.port")
-	if address == "" || port == "" {
+	if o.address == "" || o.port == "" {
 		panic("Config error: have not set address or port properly")
 	}
 
 	// start to listen
 	go func() {
-		logger.Infoln(fmt.Sprintf("starting proxy: listen at %s:%s", address, port))
-		l, err := net.Listen("tcp", address+":"+port)
+		logger.Infoln(fmt.Sprintf("starting proxy: listen at %s:%s", o.address, o.port))
+		l, err := net.Listen("tcp", o.address+":"+o.port)
 		if err != nil {
 			panic(err)
 		}
 
-		proxy := proxyN(httpItemQueue)
+		proxy := proxyN()
 		http.Serve(l, proxy)
 	}()
 
@@ -45,7 +44,14 @@ func (r *RealTimeOrigin) LoadOriginRequest(httpItemQueue chan *origin.TransferIt
 func NewRealTimeOrigin() *RealTimeOrigin {
 	logger.Infoln("[Origin] real-time origin")
 
-	return &RealTimeOrigin{}
+	// get config
+	address := viper.GetString("app.origin.realTime.address")
+	port := viper.GetString("app.origin.realTime.port")
+
+	return &RealTimeOrigin{
+		address: address,
+		port:    port,
+	}
 }
 
 // proxyN
@@ -53,7 +59,7 @@ func NewRealTimeOrigin() *RealTimeOrigin {
 //	@Description: Get httpItem objects through goproxy project
 //	@param httpItemQueue
 //	@return *goproxy.ProxyHttpServer
-func proxyN(httpItemQueue chan *origin.TransferItem) *goproxy.ProxyHttpServer {
+func proxyN() *goproxy.ProxyHttpServer {
 	proxy := goproxy.NewProxyHttpServer()
 
 	setCA(caCert, caKey) //defined in this file
@@ -88,7 +94,7 @@ func proxyN(httpItemQueue chan *origin.TransferItem) *goproxy.ProxyHttpServer {
 		response := ahttp.ResponseClone(ctx.Resp, request)
 
 		// transport ctx.Req via channel
-		httpItemQueue <- &origin.TransferItem{
+		origin.TransferItemQueue <- &origin.TransferItem{
 			Req:  request,
 			Resp: response,
 		}

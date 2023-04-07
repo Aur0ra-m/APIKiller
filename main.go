@@ -55,18 +55,15 @@ func main() {
 		go backend.NewAPIServer()
 	}
 
-	// create a httpItem channel
-	httpItemQueue := make(chan *origin.TransferItem)
-
 	// load request from different origins
 	go func() {
 		if cmd.FileInput != "" {
 			//inputOrigin := fileInputOrigin.NewFileInputOrigin("C:\\Users\\Lenovo\\Desktop\\src.txt")
 			inputOrigin := fileInputOrigin.NewFileInputOrigin(cmd.FileInput)
-			inputOrigin.LoadOriginRequest(httpItemQueue)
+			inputOrigin.LoadOriginRequest()
 		} else {
 			inputOrigin := realTimeOrigin.NewRealTimeOrigin()
-			inputOrigin.LoadOriginRequest(httpItemQueue)
+			inputOrigin.LoadOriginRequest()
 		}
 	}()
 
@@ -74,11 +71,7 @@ func main() {
 	limit := make(chan int, cmd.Thread)
 
 	for {
-		httpItem := <-httpItemQueue
-
-		// transform io.Reader
-		httpItem.Req.Body = aio.TransformReadCloser(httpItem.Req.Body)
-		httpItem.Resp.Body = aio.TransformReadCloser(httpItem.Resp.Body)
+		httpItem := <-origin.TransferItemQueue
 
 		// filter requests
 		flag := true // true -pass false -block
@@ -93,6 +86,10 @@ func main() {
 		if !flag {
 			continue
 		}
+
+		// transform io.Reader
+		httpItem.Req.Body = aio.TransformReadCloser(httpItem.Req.Body)
+		httpItem.Resp.Body = aio.TransformReadCloser(httpItem.Resp.Body)
 
 		go func() {
 			limit <- 1

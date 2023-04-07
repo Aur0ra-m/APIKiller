@@ -10,6 +10,8 @@ type TransferItem struct {
 	Https bool
 }
 
+var TransferItemQueue = make(chan *TransferItem)
+
 type Origin interface {
-	LoadOriginRequest(httpItemQueue chan *TransferItem)
+	LoadOriginRequest()
 }

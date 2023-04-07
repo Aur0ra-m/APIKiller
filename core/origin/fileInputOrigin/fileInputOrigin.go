@@ -1,7 +1,6 @@
 package fileInputOrigin
 
 import (
-	"APIKiller/core/origin"
 	logger "APIKiller/logger"
 	"bufio"
 	"fmt"
@@ -15,7 +14,7 @@ type FileInputOrigin struct {
 	path string
 }
 
-func (o *FileInputOrigin) LoadOriginRequest(httpItemQueue chan *origin.TransferItem) {
+func (o *FileInputOrigin) LoadOriginRequest() {
 	logger.Infoln("[Load Request] load request from file input origin")
 
 	if stat, _ := os.Stat(o.path); stat.IsDir() {
@@ -23,7 +22,7 @@ func (o *FileInputOrigin) LoadOriginRequest(httpItemQueue chan *origin.TransferI
 
 	} else {
 		// load origin from target file[eg. burp file]
-		o.parseDataFromBurpFile(httpItemQueue)
+		o.parseDataFromBurpFile()
 	}
 
 }
