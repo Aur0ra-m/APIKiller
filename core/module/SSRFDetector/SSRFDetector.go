@@ -14,7 +14,7 @@ type SSRFDetector struct {
 	ReverseConnectionPlatform string // end with “/”
 }
 
-func NewSSRFDetector() *SSRFDetector {
+func NewSSRFDetector() module.Detecter {
 	if viper.GetInt("app.module.SSRFDetector.option") == 0 {
 		return nil
 	}
