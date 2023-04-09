@@ -1,4 +1,4 @@
-package authorizedDetector
+package authorize
 
 import (
 	"github.com/antlabs/strsim"

@@ -1,4 +1,4 @@
-package openRedirectDetector
+package OpenRedirect
 
 import (
 	"APIKiller/core/ahttp"

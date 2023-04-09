@@ -1,4 +1,4 @@
-package SSRFDetector
+package SSRF
 
 import (
 	"APIKiller/core/ahttp"

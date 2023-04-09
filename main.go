@@ -9,12 +9,11 @@ import (
 	"APIKiller/core/database"
 	"APIKiller/core/filter"
 	"APIKiller/core/module"
-	"APIKiller/core/module/A40xBypasserModule"
-	"APIKiller/core/module/CSRFDetector"
-	"APIKiller/core/module/DoSDetector"
-	"APIKiller/core/module/SSRFDetector"
-	"APIKiller/core/module/authorizedDetector"
-	"APIKiller/core/module/openRedirectDetector"
+	"APIKiller/core/module/CSRF"
+	"APIKiller/core/module/DoS"
+	"APIKiller/core/module/OpenRedirect"
+	"APIKiller/core/module/SSRF"
+	"APIKiller/core/module/authorize"
 	"APIKiller/core/notify"
 	"APIKiller/core/origin"
 	"APIKiller/core/origin/fileInputOrigin"
@@ -143,12 +142,11 @@ func loadDatabase() {
 func loadModules() {
 	logger.Infoln("loading modules")
 
-	module.RegisterModule(authorizedDetector.NewAuthorizedDetector())
-	module.RegisterModule(A40xBypasserModule.NewA40xBypassModule())
-	module.RegisterModule(CSRFDetector.NewCSRFDetector())
-	module.RegisterModule(openRedirectDetector.NewOpenRedirectDetector())
-	module.RegisterModule(DoSDetector.NewDoSDetector())
-	module.RegisterModule(SSRFDetector.NewSSRFDetector())
+	module.RegisterModule(authorize.NewAuthorizedDetector())
+	module.RegisterModule(CSRF.NewCSRFDetector())
+	module.RegisterModule(OpenRedirect.NewOpenRedirectDetector())
+	module.RegisterModule(DoS.NewDoSDetector())
+	module.RegisterModule(SSRF.NewSSRFDetector())
 
 }
 

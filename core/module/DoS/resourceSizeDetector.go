@@ -1,4 +1,4 @@
-package DoSDetector
+package DoS
 
 import (
 	"APIKiller/core/ahttp"

@@ -1,4 +1,4 @@
-package CSRFDetector
+package CSRF
 
 import (
 	http2 "APIKiller/core/ahttp"

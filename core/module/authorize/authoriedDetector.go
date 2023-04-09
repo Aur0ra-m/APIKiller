@@ -1,4 +1,4 @@
-package authorizedDetector
+package authorize
 
 import (
 	http2 "APIKiller/core/ahttp"
