@@ -24,6 +24,11 @@ func (d *OpenRedirectDetector) Detect(item *data.DataItem) (result *data.DataIte
 	srcResp := item.SourceResponse
 	srcReq := item.SourceRequest
 
+	// filter by features of redirect
+	if srcResp.Header.Get("Location") == "" {
+		return
+	}
+
 	newReq := ahttp.ModifyQueryParamByRegExp(srcReq, `https?://[^\s&]+`, d.evilLink)
 	if newReq == nil {
 		logger.Debugln("parameter not found")
@@ -37,27 +42,6 @@ func (d *OpenRedirectDetector) Detect(item *data.DataItem) (result *data.DataIte
 	if d.judge(srcResp, newResp) {
 		return util.BuildResult(item, "Open-Redirect", newReq, newResp)
 	}
-
-	// modify parameter by target parameters list
-	//for _, param := range d.rawQueryParams {
-	//	newReq := ahttp.ModifyQueryParam(srcReq, param, d.evilLink)
-	//	if newReq == nil {
-	//		logger.Debugln("parameter not found")
-	//		continue
-	//	}
-	//
-	//	// do newReq
-	//	newResp := ahttp.DoRequest(newReq)
-	//
-	//	// judge
-	//	if d.judge(srcResp, newResp) {
-	//		item.VulnType = append(item.VulnType, "open-redirect")
-	//		item.VulnRequest = append(item.VulnRequest, newReq)
-	//		item.VulnResponse = append(item.VulnResponse, newResp)
-	//	}
-	//
-	//	return
-	//}
 
 	return nil
 }
