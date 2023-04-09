@@ -5,12 +5,14 @@ import (
 	"APIKiller/core"
 	"APIKiller/core/ahttp/hook"
 	"APIKiller/core/aio"
+	"APIKiller/core/async"
 	"APIKiller/core/database"
 	"APIKiller/core/filter"
 	"APIKiller/core/module"
 	"APIKiller/core/module/A40xBypasserModule"
 	"APIKiller/core/module/CSRFDetector"
 	"APIKiller/core/module/DoSDetector"
+	"APIKiller/core/module/SSRFDetector"
 	"APIKiller/core/module/authorizedDetector"
 	"APIKiller/core/module/openRedirectDetector"
 	"APIKiller/core/notify"
@@ -45,6 +47,7 @@ func main() {
 	loadConfig(cmd.ConfigPath)
 	loadDatabase()
 	loadModules()
+	loadAsyncCheckEngine()
 	loadFilter()
 	loadNotifer()
 	loadHooks()
@@ -71,15 +74,15 @@ func main() {
 	limit := make(chan int, cmd.Thread)
 
 	for {
-		httpItem := <-origin.TransferItemQueue
+		transferItem := <-origin.TransferItemQueue
 
 		// filter requests
 		flag := true // true -pass false -block
 		for _, f := range filter.Filters {
-			if f.Filter(httpItem.Req) == filter.FilterBlocked {
+			if f.Filter(transferItem.Req) == filter.FilterBlocked {
 				flag = false
 
-				logger.Infoln(fmt.Sprintf("filter %v, %v", httpItem.Req.Host, httpItem.Req.URL.Path))
+				logger.Infoln(fmt.Sprintf("filter %v, %v", transferItem.Req.Host, transferItem.Req.URL.Path))
 				break
 			}
 		}
@@ -88,13 +91,13 @@ func main() {
 		}
 
 		// transform io.Reader
-		httpItem.Req.Body = aio.TransformReadCloser(httpItem.Req.Body)
-		httpItem.Resp.Body = aio.TransformReadCloser(httpItem.Resp.Body)
+		transferItem.Req.Body = aio.TransformReadCloser(transferItem.Req.Body)
+		transferItem.Resp.Body = aio.TransformReadCloser(transferItem.Resp.Body)
 
 		go func() {
 			limit <- 1
 
-			core.NewHandler(httpItem)
+			core.NewHandler(transferItem)
 
 			<-limit
 		}()
@@ -145,6 +148,7 @@ func loadModules() {
 	module.RegisterModule(CSRFDetector.NewCSRFDetector())
 	module.RegisterModule(openRedirectDetector.NewOpenRedirectDetector())
 	module.RegisterModule(DoSDetector.NewDoSDetector())
+	module.RegisterModule(SSRFDetector.NewSSRFDetector())
 
 }
 
@@ -226,4 +230,11 @@ func loadHooks() {
 
 		hook.RegisterHooks(Hookk)
 	}
+}
+
+func loadAsyncCheckEngine() {
+	logger.Infoln("loading asynchronous check engine")
+
+	// start asynchronous check engine
+	go async.NewAsyncCheckEngine().Start()
 }

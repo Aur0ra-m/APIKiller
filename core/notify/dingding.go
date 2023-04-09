@@ -1,7 +1,6 @@
 package notify
 
 import (
-	http2 "APIKiller/core/ahttp"
 	"APIKiller/core/data"
 	"bytes"
 	"fmt"
@@ -34,7 +33,8 @@ func (d *Dingding) Notify(item *data.DataItem) {
 	request, _ := http.NewRequest("POST", d.webhookUrl, bytes.NewBuffer(jsonData))
 	request.Header.Set("Content-Type", "application/json; charset=UTF-8")
 
-	response := http2.DoRequest(request)
+	client := http.Client{}
+	response, _ := client.Do(request)
 
 	defer response.Body.Close()
 }

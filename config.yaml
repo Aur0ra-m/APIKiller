@@ -12,7 +12,7 @@ app: # 系统全局配置文件
       port: '8080' # 监听端口
   module: # 核心模块配置
     authorizedDetector: # 未授权&越权检测模块配置
-      option: 1 # 模块开关
+        # 模块开关
       authHeader: cookie # 探测系统使用的鉴权头，例如cookie、X-Signature或自定义鉴权头
       roles: # 不同权限的鉴权头value（目前只处理第一个角色）
         - "ASP.NET_SessionId=1tmfsnlwrkdf1fbcokn1ehrd; path=/; HttpOnly; SameSite=Lax"
@@ -24,7 +24,7 @@ app: # 系统全局配置文件
           - forbidden
           - error
     40xBypassModule: # 40x bypass探测模块
-      option: 1 # 模块开关
+      option: 0 # 模块开关
       authFailedFlag: # 鉴权失败标志配置
         statusCode: # 鉴权失败响应头
           - 403
@@ -113,13 +113,13 @@ app: # 系统全局配置文件
           - "%0a"
           - "#"
     CSRFDetector: # csrf检测模块
-      option: 1 # 模块开关
+      option: 0 # 模块开关
       csrfTokenPattern: csrf # token对应的参数名或者请求头
       csrfInvalidPattern: # csrf鉴权失败返回的标识
         - invalid
         - csrf
     openRedirectDetector: # openRedirect检测
-      option: 1
+      option: 0
       rawQueryParams:
         - url
         - redirect
@@ -137,7 +137,7 @@ app: # 系统全局配置文件
         - error
         - fail
     DoSDetector: # dos检测模块
-      option: 1
+      option: 0
       sizeParam: # 资源查询大小控制参数
         - size
         - Size
@@ -148,6 +148,8 @@ app: # 系统全局配置文件
           - too many
           - rate limit
           - Maximum login
+    SSRFDetector:
+      option: 1
   filter: # 过滤器配置
     httpFilter: # http过滤器配置：目前只支持根据指定的host，对其进行检测，如果未设置，则默认对所有流量进行检测
       host:

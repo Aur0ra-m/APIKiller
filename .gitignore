@@ -11,3 +11,7 @@ test.go
 test_test.go
 /APIKiller.exe
 /ApiKiller.log
+# 基于自搭建的TCP高效反连平台
+/core/async/asyncCheckEngine.go
+/core/async/asyncCheckEngine_test.go
+/core/async/client.go
