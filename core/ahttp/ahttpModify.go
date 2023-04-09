@@ -94,6 +94,8 @@ func ModifyURLPathMidPad(Url *url.URL, padding string) {
 	if strings.HasSuffix(Url.Path, "/") {
 		srcPath = strings.TrimRight(srcPath, "/")
 	}
+	// trim the first separator
+	srcPath = strings.TrimLeft(srcPath, "/")
 
 	// split path into fragments
 	splits := strings.Split(srcPath, "/")
@@ -108,7 +110,7 @@ func ModifyURLPathMidPad(Url *url.URL, padding string) {
 
 		newPath = firstPart + "/" + padding + "/" + thirdPart
 	} else {
-		newPath = padding + "/" + firstPart
+		newPath = "/" + padding + "/" + firstPart
 	}
 	Url.Path = newPath
 }

@@ -13,7 +13,7 @@ import (
 )
 
 type requestCacheBlock struct {
-	key   string //method-domain-url
+	key   *http.Request //method-domain-url
 	value string
 }
 
@@ -88,7 +88,10 @@ func RequestClone(src *http.Request) *http.Request {
 	// dump request
 	reqStr := ""
 	for _, c := range cache {
-		if c != nil && c.key == src.URL.String() {
+		if c == nil {
+			break
+		}
+		if c.key == src {
 			reqStr = c.value
 			break
 		}
@@ -99,7 +102,7 @@ func RequestClone(src *http.Request) *http.Request {
 		if cache[updatePoint] == nil {
 			cache[updatePoint] = &requestCacheBlock{}
 		}
-		cache[updatePoint].key = src.URL.String()
+		cache[updatePoint].key = src
 		cache[updatePoint].value = reqStr
 		updatePoint = (updatePoint + 1) % 128
 	}
