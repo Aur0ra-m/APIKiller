@@ -123,7 +123,7 @@
                       class="panel-collapse collapse"
               >
                 <div class="panel-body ap-ob-break">
-                  {{ paramItem[config.name] }}
+                  {{ atob(paramItem[config.name]) }}
                 </div>
               </div>
             </div>
@@ -215,6 +215,11 @@
                 .catch((error) => {
                   console.error(error);
                 });
+      },
+      atob(data) {
+        if (!!data) {
+          return atob(data)
+        }
       },
       getCheckComponentRefresh() {
         var vueself = this;

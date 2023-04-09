@@ -4,7 +4,6 @@ import (
 	"APIKiller/core/data"
 	"APIKiller/core/module"
 	logger "APIKiller/logger"
-	"encoding/base64"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -76,9 +75,9 @@ func (s *APIServer) getHttpItembyId(Id string) string {
 	s.db.Find(item)
 
 	// decode base64
-	decodeString, _ := base64.StdEncoding.DecodeString(item.Item)
+	//decodeString, _ := base64.StdEncoding.DecodeString(item.Item)
 
-	return string(decodeString)
+	return item.Item
 }
 
 func (s *APIServer) updateCheckState(c *gin.Context) {
