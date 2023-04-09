@@ -16,6 +16,83 @@ app: # 系统全局配置文件
       authHeader: cookie # 探测系统使用的鉴权头，例如cookie、X-Signature或自定义鉴权头
       roles: # 不同权限的鉴权头value（目前只处理第一个角色）
         - "ASP.NET_SessionId=1tmfsnlwrkdf1fbcokn1ehrd; path=/; HttpOnly; SameSite=Lax"
+      ipHeader:  # 后端常见请求ip后门（通过特定的header来判断是否是本地请求，从而进行豁免）
+        - Access-Control-Allow-Origin
+        - Base-Url
+        - CF-Connecting_IP
+        - CF-Connecting-IP
+        - Client-IP
+        - Cluster-Client-IP
+        - Destination
+        - Forwarded-For-Ip
+        - Forwarded-For
+        - Forwarded-Host
+        - Forwarded
+        - Host
+        - Http-Url
+        - Origin
+        - Profile
+        - Proxy-Host
+        - Proxy-Url
+        - Proxy
+        - Real-Ip
+        - Redirect
+        - Referer
+        - Referrer
+        - Request-Uri
+        - True-Client-IP
+        - Uri
+        - Url
+        - X-Arbitrary
+        - X-Client-IP
+        - X-Custom-IP-Authorization
+        - X-Forward-For
+        - X-Forward
+        - X-Forwarded-By
+        - X-Forwarded-For-Original
+        - X-Forwarded-For
+        - X-Forwarded-Host
+        - X-Forwarded-Proto
+        - X-Forwarded-Server
+        - X-Forwarded
+        - X-Forwarder-For
+        - X-Host
+        - X-HTTP-DestinationURL
+        - X-HTTP-Host-Override
+        - X-Original-Remote-Addr
+        - X-Original-URL
+        - X-Originally-Forwarded-For
+        - X-Originating-IP
+        - X-Proxy-Url
+        - X-ProxyUser-Ip
+        - X-Real-Ip
+        - X-Real-IP
+        - X-Referrer
+        - X-Remote-Addr
+        - X-Remote-IP
+        - X-Rewrite-URL
+        - X-True-IP
+        - X-WAP-Profile
+      ip: 127.0.0.1 # 特定豁免ip
+      apiVersion: # api版本格式，例如有 /apiv1/或者/api/v1/等，如下是/api1/的示例
+        format: "api\\d"
+        prefix: "api"
+      pathFuzz: # 路径fuzz列表
+          midPadding:
+            - ""
+            - "."
+            - "..;"
+            - ".;"
+          endPadding:
+            - "?"
+            - "??"
+            - "."
+            - ".."
+            - "./"
+            - "%20"
+            - "%09"
+            - "%0a"
+            - "#"
       judgement: # 判断引擎配置
         blackStatusCodes: # 鉴权失败响应码
           - 403
