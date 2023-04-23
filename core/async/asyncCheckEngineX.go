@@ -27,6 +27,12 @@ func NewAsyncCheckEngine() *AsyncCheckEngine {
 }
 
 func (e *AsyncCheckEngine) Start() {
+	// heart beat detection
+	if !e.heartbeat() {
+		logger.Errorln("cannot access target website successfully: http://api.ceye.io")
+		return
+	}
+
 	// build a request
 	request, _ := http.NewRequest("GET", e.httpAPI, nil)
 	client := http.Client{}
@@ -64,6 +70,27 @@ func (e *AsyncCheckEngine) Start() {
 		// sleep
 		time.Sleep(5 * 1000 * time.Millisecond)
 	}
+}
+
+//
+// heartbeat
+//  @Description: check the health of http://api.ceye.io/ three times
+//  @receiver e
+//  @return bool
+//
+func (e *AsyncCheckEngine) heartbeat() bool {
+	request, _ := http.NewRequest("GET", e.httpAPI, nil)
+	client := http.Client{}
+
+	for i := 0; i < 3; i++ {
+		response, err := client.Do(request)
+		if err != nil || response.StatusCode >= 500 {
+			logger.Debugln(err)
+		} else {
+			return true
+		}
+	}
+	return false
 }
 
 func (e *AsyncCheckEngine) check(token string) {
