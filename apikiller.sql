@@ -21,7 +21,7 @@ CREATE TABLE `data_item_strs` (
 
 CREATE TABLE `http_items` (
                               `id` int(11) NOT NULL AUTO_INCREMENT,
-                              `paramItem` varchar(15000) CHARACTER SET utf8 DEFAULT NULL,
+                              `item` varchar(15000) CHARACTER SET utf8 DEFAULT NULL,
                               PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=52 DEFAULT CHARSET=latin1;
 
