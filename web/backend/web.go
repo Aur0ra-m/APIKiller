@@ -44,8 +44,15 @@ func (s *APIServer) route(server *gin.Engine) {
 }
 
 func (s *APIServer) loadDatabase() {
+	//get config
+	host := viper.GetString("app.db.mysql.host")
+	port := viper.GetString("app.db.mysql.port")
+	dbname := viper.GetString("app.db.mysql.dbname")
+	username := viper.GetString("app.db.mysql.username")
+	password := viper.GetString("app.db.mysql.password")
+
 	//dsn := "user:pass@tcp(127.0.0.1:3306)/dbname?charset=utf8mb4&parseTime=True&loc=Local"
-	dsn := fmt.Sprintf("root:123456@tcp(192.168.52.153:3306)/apikiller?charset=utf8mb4&parseTime=True&loc=Local")
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", username, password, host, port, dbname)
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 
 	// disable logging
