@@ -136,7 +136,7 @@
 </div>
 
 <script>
-  var host = "http://127.0.0.1"; //主站域名
+  // var host = "http://127.0.0.1"; //主站域名
 
   var vm = new Vue({
     el: "#app",
@@ -205,7 +205,7 @@
       },
       updateCheckState(id) {
         //默认只能将未打标更新为打标
-        let url = host + "/check?Id=" + id;
+        let url = "/api/check?Id=" + id;
         fetch(url)
                 .then((response) => response.json())
                 .then((data) => {
@@ -257,7 +257,7 @@
         //获取列表的全部信息
         console.log("GetAllList function");
 
-        var Url = host + "/list"; //本地返回数据, 动态
+        var Url = "/api/list"; //本地返回数据, 动态
         fetch(Url, {
           method: "get",
         })

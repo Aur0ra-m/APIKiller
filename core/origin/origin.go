@@ -5,9 +5,8 @@ import (
 )
 
 type TransferItem struct {
-	Req   *http.Request
-	Resp  *http.Response
-	Https bool
+	Req  *http.Request
+	Resp *http.Response
 }
 
 var TransferItemQueue = make(chan *TransferItem)

@@ -12,7 +12,11 @@ import (
 	"gorm.io/gorm"
 	"io/ioutil"
 	"net/http"
+	"os"
+	"os/exec"
+	"runtime"
 	"strconv"
+	"syscall"
 )
 
 type APIServer struct {
@@ -37,10 +41,14 @@ func (s *APIServer) init(ipaddr, port string) {
 
 func (s *APIServer) route(server *gin.Engine) {
 
-	group := server.Group("/")
-	group.GET("/test", s.test)
-	group.GET("/list", s.list)
-	group.GET("/check", s.updateCheckState)
+	// api path
+	APIGroup := server.Group("/api")
+	APIGroup.GET("/test", s.test)
+	APIGroup.GET("/list", s.list)
+	APIGroup.GET("/check", s.updateCheckState)
+
+	// bind static directory path
+	server.Static("/index", "./web/frontend/www")
 }
 
 func (s *APIServer) loadDatabase() {
@@ -130,6 +138,46 @@ func (s *APIServer) list(c *gin.Context) {
 	c.JSON(http.StatusOK, items)
 }
 
+//
+// autoWakeup
+//  @Description: Automatically wake up the browser when running locally
+//  @receiver s
+//
+func (s *APIServer) autoWakeup(ipaddr, port string) {
+	fmt.Println("Wakeup")
+	var err error
+
+	// secure handle
+	_, err2 := strconv.Atoi(port)
+	if err2 != nil {
+		logger.Debugln("the format of port is invalid")
+		logger.Errorln(err2)
+	}
+
+	targetUrl := "http://127.0.0.1:" + port + "/index/index.html"
+
+	switch runtime.GOOS {
+	case "linux":
+		err = exec.Command("xdg-open", targetUrl).Start()
+		break
+	case "windows":
+		cmd := exec.Command("cmd", "/c", "start", targetUrl)
+		cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+		err = cmd.Start()
+		break
+	case "darwin":
+		err = exec.Command("open", targetUrl).Start()
+		break
+	default:
+		err = os.ErrInvalid
+	}
+
+	if err != nil {
+		fmt.Println(err)
+		logger.Errorln(err)
+	}
+}
+
 func NewAPIServer() {
 	server := APIServer{}
 
@@ -138,6 +186,11 @@ func NewAPIServer() {
 
 	ipaddr := viper.GetString("app.web.ipaddr")
 	port := viper.GetString("app.web.port")
+
+	// wakeup browser
+	if ipaddr == "127.0.0.1" {
+		server.autoWakeup(ipaddr, port)
+	}
 
 	server.init(ipaddr, port)
 }
