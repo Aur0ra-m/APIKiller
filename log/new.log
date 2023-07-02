@@ -1,0 +1,22 @@
+2023-07-02 16:15:58 [INFO] loading config
+2023-07-02 16:15:58 [DEBU] current config: ./config/config.release.yaml
+2023-07-02 16:15:58 [INFO] loading database
+2023-07-02 16:15:58 [INFO] loading modules
+2023-07-02 16:15:58 [INFO] [Load Module] authorized module
+2023-07-02 16:15:58 [INFO] [Load Module] csrf detector module
+2023-07-02 16:15:58 [INFO] [Load Module] Open-Redirect detect module
+2023-07-02 16:15:58 [INFO] [Load Module] DoS detect module
+2023-07-02 16:15:58 [INFO] [Load Module] SSRF detect module
+2023-07-02 16:15:58 [INFO] loading asynchronous check engine
+2023-07-02 16:15:58 [INFO] loading filters
+2023-07-02 16:15:58 [INFO] [Load Filter] http filter
+2023-07-02 16:15:58 [INFO] [Load Filter] static file filter
+2023-07-02 16:15:58 [INFO] [Load Filter] duplicate filter
+2023-07-02 16:15:58 [INFO] loading notifier
+2023-07-02 16:15:58 [INFO] not support windows operation system
+2023-07-02 16:15:58 [INFO] loading hooks
+2023-07-02 16:15:58 [INFO] loading OPS platform
+2023-07-02 16:15:58 [INFO] start handle
+2023-07-02 16:15:58 [INFO] [Origin] real-time origin
+2023-07-02 16:15:58 [INFO] [Load Request] load request from real time origin
+2023-07-02 16:15:58 [INFO] starting proxy: listen at 127.0.0.1:8080

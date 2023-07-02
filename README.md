@@ -20,8 +20,7 @@ APIKiller-企业API安全保护神</h2>
 详细参考： [快看~项目精髓](https://aur0ra.cn/3-apikiller/)
 
 ## 项目架构
-
-<img src="static/img/architecture.jpg" alt="img.png" />
+<img src="static/img/img_070201.jpg" alt="img_architecture.png" />
 
 
 ## Feature
@@ -101,7 +100,7 @@ APIKiller-企业API安全保护神</h2>
 
      
 
-3. 一键启动【所有的配置都在config.yaml】
+3. 一键启动【配置文件位于./config/目录下(默认是config.release.yaml)，或自己指定】
 
     <img src="static/img/img_4.png" alt="img_4.png" width="80%;"/>
 
@@ -246,6 +245,11 @@ https://github.com/Aur0ra-m/APIKiller/wiki
 - 【优化】web运营平台启动优化，当本地启动时，会自动打开浏览器访问运营平台
 - 【优化】删去origin中不需要的参数，优化meta结构
 
+### v1.1.0
+- 【重构】调整项目目录和框架，向标准化靠齐
+- 【功能】配置加载进行多套方案，允许在开发和正式部署阶段采用不同的配置文件，或加载时指定配置文件
+- 【优化】对日志打印及保存进行优化，将日志按日期记录在./log目录下
+- 【优化】对项目早期的代码进行标准化处理，删除无效代码或测试代码，确保高质量程序代码
 
 ## 项目社区
 如想对项目进行深入了解，或加入研发团队欢迎加入APIKiller项目社区。<br>
