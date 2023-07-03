@@ -30,7 +30,7 @@ import (
 
 const (
 	VERSION     = "1.1.0"
-	LoggerLevel = logrus.InfoLevel
+	LoggerLevel = logrus.DebugLevel
 )
 
 type Runner struct {
@@ -200,7 +200,7 @@ func loadConfig(configPath string) {
 	if configPath == "" {
 		// using environment variable
 		env := os.Getenv("APIKiller_env")
-		if env == "dev" {
+		if env == "dev" || true {
 			configPath = "./config/config.dev.yaml"
 		} else {
 			configPath = "./config/config.release.yaml"

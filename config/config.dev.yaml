@@ -16,9 +16,33 @@ app: # 系统全局配置文件
   module: # 核心模块配置
     authorizedDetector: # 未授权&越权检测模块配置
       option: 1 # 模块开关
-      authHeader: cookie # 探测系统使用的鉴权头，例如cookie、X-Signature或自定义鉴权头
-      roles: # 不同权限的鉴权头value（目前只处理第一个角色）
-        - "role=guest"
+      authGroup: # position type code 0-header，1-query param， 2-body param
+        - domain:
+            - "127.0.0.1"
+            - "10.10.10.10"
+            - "127.0.0.1:8000"
+          replaceGroup :
+            - position: 0
+              key: "Cookie"
+              value: "Aur0ra"
+            - position: 1
+              key: "key"
+              value: "Aur0ra"
+            - position: 2
+              key: "postKey"
+              value: "Aur0ra"
+        - domain:
+                - "127.0.0.1"
+                -
+                -
+          replaceItem:
+            - position: 0
+              key: "Cookie"
+              value: "TEST"
+            - position: 0
+              key: "Cookie"
+              value: "TEST"
+
       ipHeader:  # 后端常见请求ip后门（通过特定的header来判断是否是本地请求，从而进行豁免）
         - Access-Control-Allow-Origin
         - Base-Url

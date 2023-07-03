@@ -6,6 +6,7 @@
 *.iml
 out
 gen
+log/*
 
 test.go
 test_test.go

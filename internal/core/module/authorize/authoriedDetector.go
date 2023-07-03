@@ -24,8 +24,7 @@ var (
 )
 
 type AuthorizedDetector struct {
-	authHeader       string
-	Roles            []string
+	authGroups       []authGroup
 	blackStatusCodes []int
 	blackKeywords    []string
 	records          []string
@@ -42,17 +41,72 @@ type AuthorizedDetector struct {
 func (d *AuthorizedDetector) Detect(item *data.DataItem) (result *data.DataItem) {
 	logger.Debugln("[Detect] authorized detect")
 
-	resultDataItem := d.unauthorizedDetect(item)
+	// match auth group
+	var group = authGroup{}
+	for _, group = range d.authGroups {
+		if slices.Contains(group.Domain, item.SourceRequest.Host) {
+			break
+		}
+	}
+
+	resultDataItem := d.unauthorizedDetect(item, &group)
 	if resultDataItem != nil {
 		return resultDataItem
 	}
 
-	resultDataItem = d.multiRolesDetect(item)
+	resultDataItem = d.multiRolesDetect(item, &group)
 	if resultDataItem != nil {
 		return resultDataItem
 	}
 
 	return nil
+}
+
+//
+// deleteAuthIdentifier
+//  @Description: delete auth identifier according to the first replace group in auth group
+//  @receiver d
+//  @param group
+//
+func (d *AuthorizedDetector) deleteAuthIdentifier(group *authGroup, req *http.Request) {
+	rg := group.ReplaceGroups[0]
+
+	switch rg.Position {
+	case Replace_Position_Code_Header:
+		ahttp.RemoveHeader(req, rg.Key)
+		break
+	case Replace_Position_Code_Query:
+		// ...
+		break
+	case Replace_Position_Code_Body:
+		// ...
+		break
+	}
+}
+
+//
+// replaceAuthIdentifierandNecessaryParms
+//  @Description: replace auth identifier and other necessary parameters(e.g. csrf token) with replace group items
+//  @receiver d
+//  @param group
+//  @param req
+//
+func (d *AuthorizedDetector) replaceAuthIdentifierandNecessaryParms(group *authGroup, req *http.Request) {
+	for _, rg := range group.ReplaceGroups {
+		switch rg.Position {
+		case Replace_Position_Code_Header:
+			ahttp.UpdateHeader(req, rg.Key, rg.Value)
+			break
+		case Replace_Position_Code_Query:
+			ahttp.ModifyQueryParam(req, rg.Key, rg.Value)
+			break
+		case Replace_Position_Code_Body:
+			ahttp.ModifyPostParam(req, rg.Key, rg.Value)
+			break
+		default:
+			logger.Errorln("cannot recognize the position code")
+		}
+	}
 }
 
 // unauthorizedDetect
@@ -61,11 +115,11 @@ func (d *AuthorizedDetector) Detect(item *data.DataItem) (result *data.DataItem)
 //	@receiver d
 //	@param
 //	@param item
-func (d *AuthorizedDetector) unauthorizedDetect(item *data.DataItem) (result *data.DataItem) {
+func (d *AuthorizedDetector) unauthorizedDetect(item *data.DataItem, group *authGroup) (result *data.DataItem) {
 	newReq := ahttp.RequestClone(item.SourceRequest)
 
-	// delete auth header
-	ahttp.RemoveHeader(newReq, d.authHeader)
+	// delete auth identifier
+	d.deleteAuthIdentifier(group, newReq)
 
 	// make request and judge
 	newResp := ahttp.DoRequest(newReq)
@@ -83,14 +137,11 @@ func (d *AuthorizedDetector) unauthorizedDetect(item *data.DataItem) (result *da
 //	@receiver d
 //	@param
 //	@param item
-func (d *AuthorizedDetector) multiRolesDetect(item *data.DataItem) (result *data.DataItem) {
+func (d *AuthorizedDetector) multiRolesDetect(item *data.DataItem, group *authGroup) (result *data.DataItem) {
 	newReq := ahttp.RequestClone(item.SourceRequest)
 
-	// default support one role
-	newRole := d.Roles[0]
-
-	// change auth header
-	newReq.Header.Set(d.authHeader, newRole)
+	// replace necessary data
+	d.replaceAuthIdentifierandNecessaryParms(group, newReq)
 
 	// do request
 	newResp := ahttp.DoRequest(newReq)
@@ -280,15 +331,9 @@ func NewAuthorizedDetector() module.Detecter {
 	}
 
 	logger.Infoln("[Load Module] authorized module")
-
-	if len(viper.GetStringSlice("app.module.authorizedDetector.roles")) == 0 {
-		logger.Errorln("no role set")
-		panic("no role set")
-	}
-
-	return &AuthorizedDetector{
-		authHeader:       viper.GetString("app.module.authorizedDetector.authHeader"),
-		Roles:            viper.GetStringSlice("app.module.authorizedDetector.roles"),
+	
+	detector := &AuthorizedDetector{
+		authGroups:       []authGroup{},
 		blackStatusCodes: viper.GetIntSlice("app.module.authorizedDetector.judgement.blackStatusCodes"),
 		blackKeywords:    viper.GetStringSlice("app.module.authorizedDetector.judgement.blackKeywords"),
 		records:          nil,
@@ -300,4 +345,8 @@ func NewAuthorizedDetector() module.Detecter {
 		apiVersionPrefix: viper.GetString("app.module.authorizedDetector.apiVersion.prefix"),
 		mu:               sync.Mutex{},
 	}
+
+	viper.UnmarshalKey("app.module.authorizedDetector.authGroup", &detector.authGroups)
+
+	return detector
 }

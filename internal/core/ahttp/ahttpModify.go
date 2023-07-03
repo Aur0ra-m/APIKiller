@@ -159,19 +159,14 @@ func ModifyURLPathAPIVerion(Url *url.URL, srcString, targetString string) {
 //
 func ModifyParam(req *http.Request, paramName string, newValue string) *http.Request {
 
-	newReq := ModifyQueryParam(req, paramName, newValue)
-
-	if newReq != nil {
-		return newReq
+	newReq := RequestClone(req)
+	if ModifyQueryParam(newReq, paramName, newValue) == nil {
+		if ModifyPostParam(newReq, paramName, newValue) == nil {
+			return nil
+		}
 	}
 
-	newReq = ModifyPostParam(req, paramName, newValue)
-
-	if newReq != nil {
-		return newReq
-	}
-
-	return nil
+	return newReq
 }
 
 //
@@ -185,12 +180,9 @@ func ModifyParam(req *http.Request, paramName string, newValue string) *http.Req
 func ModifyQueryParam(req *http.Request, paramName string, newValue string) *http.Request {
 	queryParams := req.URL.Query()
 	if queryParams.Get(paramName) != "" {
-		
-		// clone a new newReq
-		newReq := RequestClone(req)
 
-		newReq.URL.RawQuery = strings.Replace(newReq.URL.RawQuery, paramName+"="+newReq.URL.Query()[paramName][0], paramName+"="+newValue, 1)
-		return newReq
+		req.URL.RawQuery = strings.Replace(req.URL.RawQuery, paramName+"="+req.URL.Query()[paramName][0], paramName+"="+newValue, 1)
+		return req
 	}
 
 	return nil
@@ -219,27 +211,23 @@ func ModifyPostParam(req *http.Request, paramName string, newValue string) *http
 	var newReq *http.Request
 	if ct == "application/x-www-form-urlencoded" {
 		if strings.Contains(bodyStr, paramName+"=") {
-			newReq = RequestClone(req)
 
-			modifyPostFormParam(newReq, paramName, newValue)
+			modifyPostFormParam(req, paramName, newValue)
 		}
 	} else if ct == "application/json" {
 		if strings.Contains(bodyStr, "\""+paramName+"\"") {
-			newReq = RequestClone(req)
 
-			modifyPostJsonParam(newReq, paramName, newValue)
+			modifyPostJsonParam(req, paramName, newValue)
 		}
 	} else if ct == "application/xml" {
 		if strings.Contains(bodyStr, paramName+">") {
-			newReq = RequestClone(req)
 
-			modifyPostXMLParam(newReq, paramName, newValue)
+			modifyPostXMLParam(req, paramName, newValue)
 		}
 	} else if strings.Contains(ct, "multipart/form-data") {
 		if strings.Contains(bodyStr, ";name=\""+paramName) {
-			newReq = RequestClone(req)
 
-			modifyPostMultiDataParam(newReq, paramName, newValue)
+			modifyPostMultiDataParam(req, paramName, newValue)
 		}
 	} else {
 		logger.Errorln("Not support other Content-Type")
@@ -347,31 +335,6 @@ func modifyPostBody(req *http.Request, paramItemRegExp string, paramKVSeparator 
 
 	// update Content-Length
 	req.ContentLength = int64(len(newBody))
-}
-
-//
-// ModifyParamByRegExp
-//  @Description: modify parameter value everywhere through specified value format
-//  @param req
-//  @param paramName
-//  @param newValue
-//  @return *http.Request
-//
-func ModifyParamByRegExp(req *http.Request, paramName string, newValue string) *http.Request {
-
-	newReq := ModifyQueryParam(req, paramName, newValue)
-
-	if newReq != nil {
-		return newReq
-	}
-
-	newReq = ModifyPostParam(req, paramName, newValue)
-
-	if newReq != nil {
-		return newReq
-	}
-
-	return nil
 }
 
 //
