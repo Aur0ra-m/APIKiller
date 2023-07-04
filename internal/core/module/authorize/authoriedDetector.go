@@ -5,7 +5,6 @@ import (
 	"APIKiller/internal/core/data"
 	"APIKiller/internal/core/module"
 	"APIKiller/pkg/logger"
-	"APIKiller/pkg/util"
 	"fmt"
 	"github.com/antlabs/strsim"
 	"github.com/spf13/viper"
@@ -125,7 +124,7 @@ func (d *AuthorizedDetector) unauthorizedDetect(item *data.DataItem, group *auth
 	newResp := ahttp.DoRequest(newReq)
 
 	if d.judge(item.SourceResponse, newResp) == BYPASSED {
-		return util.BuildResult(item, "unauthorized", newReq, newResp)
+		return data.BuildResult(item, "unauthorized", newReq, newResp)
 	}
 
 	return nil
@@ -148,7 +147,7 @@ func (d *AuthorizedDetector) multiRolesDetect(item *data.DataItem, group *authGr
 
 	// judge
 	if d.judge(item.SourceResponse, newResp) == BYPASSED {
-		return util.BuildResult(item, "authorize-multiRoles", newReq, newResp)
+		return data.BuildResult(item, "authorize-multiRoles", newReq, newResp)
 	}
 
 	// bypass
@@ -199,7 +198,7 @@ func (d *AuthorizedDetector) bypass(item *data.DataItem) (result *data.DataItem)
 	}
 
 	if vulnRequest != nil {
-		return util.BuildResult(item, "authorize-bypass", vulnRequest, vulnResponse)
+		return data.BuildResult(item, "authorize-bypass", vulnRequest, vulnResponse)
 	}
 
 	return nil
@@ -331,7 +330,7 @@ func NewAuthorizedDetector() module.Detecter {
 	}
 
 	logger.Infoln("[Load Module] authorized module")
-	
+
 	detector := &AuthorizedDetector{
 		authGroups:       []authGroup{},
 		blackStatusCodes: viper.GetIntSlice("app.module.authorizedDetector.judgement.blackStatusCodes"),

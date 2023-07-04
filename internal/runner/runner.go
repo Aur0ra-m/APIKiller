@@ -29,7 +29,7 @@ import (
 )
 
 const (
-	VERSION     = "1.2.0"
+	VERSION     = "1.2.1"
 	LoggerLevel = logrus.InfoLevel
 )
 
@@ -198,9 +198,9 @@ func loadConfig(configPath string) {
 
 	// use the specified configuration file when configPath option is not blank
 	if configPath == "" {
-		// using environment variable
-		env := os.Getenv("APIKiller_env")
-		if env == "dev" || true {
+		// using file .env
+		_, err := os.Stat("./.env")
+		if err != nil {
 			configPath = "./config/config.dev.yaml"
 		} else {
 			configPath = "./config/config.release.yaml"

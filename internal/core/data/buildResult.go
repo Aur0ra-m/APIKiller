@@ -1,7 +1,7 @@
-package util
+package data
 
 import (
-	"APIKiller/internal/core/data"
+	"APIKiller/pkg/util"
 	"fmt"
 	"net/http"
 	"time"
@@ -16,9 +16,9 @@ import (
 //  @param vulnResp
 //  @return *data.DataItem
 //
-func BuildResult(dataItem *data.DataItem, vulnType string, vulnReq *http.Request, vulnResp *http.Response) *data.DataItem {
-	return &data.DataItem{
-		Id:             GenerateRandomId(),
+func BuildResult(dataItem *DataItem, vulnType string, vulnReq *http.Request, vulnResp *http.Response) *DataItem {
+	return &DataItem{
+		Id:             util.GenerateRandomId(),
 		Domain:         dataItem.Domain,
 		Url:            dataItem.Url,
 		Method:         dataItem.Method,

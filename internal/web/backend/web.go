@@ -4,6 +4,7 @@ import (
 	"APIKiller/internal/core/data"
 	"APIKiller/internal/core/module"
 	"APIKiller/pkg/logger"
+	"encoding/base64"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -144,16 +145,20 @@ func (s *APIServer) list(c *gin.Context) {
 	// recover http item string from id
 	for i, item := range items {
 		// item.SourceRequest
-		items[i].SourceRequest = s.getHttpItembyId(item.SourceRequest)
+		decodeString, _ := base64.StdEncoding.DecodeString(s.getHttpItembyId(item.SourceRequest))
+		items[i].SourceRequest = string(decodeString)
 
 		//item.SourceResponse
-		items[i].SourceResponse = s.getHttpItembyId(item.SourceResponse)
+		decodeString2, _ := base64.StdEncoding.DecodeString(s.getHttpItembyId(item.SourceResponse))
+		items[i].SourceResponse = string(decodeString2)
 
 		//item.VulnRequest
-		items[i].VulnRequest = s.getHttpItembyId(item.VulnRequest)
+		decodeString3, _ := base64.StdEncoding.DecodeString(s.getHttpItembyId(item.VulnRequest))
+		items[i].VulnRequest = string(decodeString3)
 
 		//item.VulnResponse
-		items[i].VulnResponse = s.getHttpItembyId(item.VulnResponse)
+		decodeString4, _ := base64.StdEncoding.DecodeString(s.getHttpItembyId(item.VulnResponse))
+		items[i].VulnResponse = string(decodeString4)
 	}
 
 	data := make(map[string]interface{})

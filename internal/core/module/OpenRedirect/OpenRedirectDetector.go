@@ -5,7 +5,6 @@ import (
 	"APIKiller/internal/core/data"
 	"APIKiller/internal/core/module"
 	"APIKiller/pkg/logger"
-	"APIKiller/pkg/util"
 	"github.com/spf13/viper"
 	"io/ioutil"
 	"net/http"
@@ -40,7 +39,7 @@ func (d *OpenRedirectDetector) Detect(item *data.DataItem) (result *data.DataIte
 
 	// judge
 	if d.judge(srcResp, newResp) {
-		return util.BuildResult(item, "Open-Redirect", newReq, newResp)
+		return data.BuildResult(item, "Open-Redirect", newReq, newResp)
 	}
 
 	return nil

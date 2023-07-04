@@ -4,6 +4,7 @@
 # IntelliJ project files
 .idea
 *.iml
+.dev
 out
 gen
 log/*

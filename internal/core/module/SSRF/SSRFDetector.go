@@ -44,5 +44,5 @@ func (d *SSRFDetector) Detect(item *data.DataItem) (result *data.DataItem) {
 	newResp := ahttp2.DoRequest(newReq)
 
 	// asynchronous result
-	return util2.BuildResult(item, "SSRF"+module.AsyncDetectVulnTypeSeperator+token, newReq, newResp)
+	return data.BuildResult(item, "SSRF"+module.AsyncDetectVulnTypeSeperator+token, newReq, newResp)
 }

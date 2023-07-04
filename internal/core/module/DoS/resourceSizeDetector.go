@@ -3,7 +3,6 @@ package DoS
 import (
 	ahttp2 "APIKiller/internal/core/ahttp"
 	"APIKiller/internal/core/data"
-	"APIKiller/pkg/util"
 	"github.com/spf13/viper"
 	"net/http"
 	"strconv"
@@ -34,7 +33,7 @@ func (d *resourceSizeDetector) Detect(item *data.DataItem) (result *data.DataIte
 
 		// judge
 		if d.judge(srcResp, newResp) {
-			return util.BuildResult(item, "DoS-ResourceSizeNotStrict", newReq, newResp)
+			return data.BuildResult(item, "DoS-ResourceSizeNotStrict", newReq, newResp)
 		}
 
 		return nil

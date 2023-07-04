@@ -63,11 +63,11 @@ APIKiller-企业API安全保护神</h2>
    2. **手动部署**
       1. docker pull 数据库镜像
       ```shell
-       sudo docker run --name mysql-server -e MYSQL_ROOT_PASSWORD=123456 -p 3306:3306  mysql:5.7
+       sudo docker run --name mysql-server -e MYSQL_ROOT_PASSWORD=123456 -p 3306:3306  mysql
       ```
       2. 导入apikiller.sql文件
       ```shell
-       sudo docker cp /tmp/apikiller.sql bteye-mysql:/tmp/apikiller.sql
+       sudo docker cp /tmp/apikiller.sql mysql-server:/tmp/apikiller.sql
       ```
       3. 登入mysql
       ```shell
@@ -253,6 +253,11 @@ https://github.com/Aur0ra-m/APIKiller/wiki
 
 ### v1.2.0
 - 【功能】越权检测模块新增对不同站点进行不同的替换能力，且支持query、header、post body多点替换
+
+### v1.2.1 
+- 【优化】调整了开发环境和部署环境的判定逻辑
+- 【bugFix】修复前端中文乱码
+- 【bugfix】修复mysql的版本问题，直接拉取最新版，避免拉取不到指定版本的docker镜像
 
 ## 项目社区
 如想对项目进行深入了解，或加入研发团队欢迎加入APIKiller项目社区。<br>
