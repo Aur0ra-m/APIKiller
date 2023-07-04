@@ -29,8 +29,8 @@ import (
 )
 
 const (
-	VERSION     = "1.1.0"
-	LoggerLevel = logrus.DebugLevel
+	VERSION     = "1.2.0"
+	LoggerLevel = logrus.InfoLevel
 )
 
 type Runner struct {
