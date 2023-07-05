@@ -200,7 +200,7 @@ func loadConfig(configPath string) {
 	if configPath == "" {
 		// using file .env
 		_, err := os.Stat("./.env")
-		if err != nil {
+		if err == nil {
 			configPath = "./config/config.dev.yaml"
 		} else {
 			configPath = "./config/config.release.yaml"
